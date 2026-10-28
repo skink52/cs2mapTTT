@@ -1,0 +1,35 @@
+.TttHost { width: 100%; height: 100%; }
+.Ttt { width: 100%; height: 100%; opacity: 0; font-family: Stratum2, "Stratum2 Bold", Arial; }
+.Ttt.stOn { opacity: 1; }
+.HUD_SCOREBOARD_VISIBLE .Ttt, .HUD_ENDOFMATCH_VISIBLE .Ttt { visibility: collapse; }
+
+.Mask { width: 440px; height: 130px; horizontal-align: right; margin-top: 66px; background-color: #000000; opacity: 0; }
+.Mask.stOn { opacity: 1; }
+
+.RoleBox { width: 340px; height: 74px; margin-left: 24px; margin-top: 300px; background-color: #303030cc; border-radius: 4px; }
+.Ttt.stInn .RoleBox { background-color: #2f8f3fdd; }
+.Ttt.stTra .RoleBox { background-color: #b02020dd; }
+.Ttt.stDet .RoleBox { background-color: #2050c0dd; }
+.Ttt.stPrep .RoleBox { background-color: #8a6a10dd; }
+.Ttt.stWait .RoleBox { background-color: #404040cc; }
+.Ttt.stSpec .RoleBox { background-color: #303030aa; }
+.RoleText { width: 320px; height: 40px; margin-left: 12px; margin-top: 4px; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
+.SubText { width: 320px; height: 26px; margin-left: 12px; margin-top: 44px; font-size: 20px; color: #f0f0f0; }
+
+.InfoText { width: 560px; height: 52px; margin-left: 24px; margin-top: 380px; font-size: 19px; color: #ffffff; text-shadow: 1px 1px 2px #000000; }
+.TrackText { width: 560px; height: 80px; margin-left: 24px; margin-top: 434px; font-size: 20px; color: #9fd0ff; text-shadow: 1px 1px 2px #000000; }
+
+.MsgA { width: 1100px; height: 34px; horizontal-align: center; margin-top: 200px; text-align: center; font-size: 26px; color: #ffffff; text-shadow: 2px 2px 3px #000000; }
+.MsgB { width: 1100px; height: 30px; horizontal-align: center; margin-top: 238px; text-align: center; font-size: 22px; color: #ffe08a; text-shadow: 2px 2px 3px #000000; }
+
+.ShopBox { width: 420px; height: 336px; horizontal-align: right; margin-right: 24px; margin-top: 260px; background-color: #101010e6; border: 2px solid #b02020; border-radius: 4px; opacity: 0; }
+.ShopBox.stOpen { opacity: 1; }
+.Ttt.stDet .ShopBox { border: 2px solid #2050c0; }
+.ShopTitle { width: 400px; height: 32px; margin-left: 10px; margin-top: 6px; font-size: 22px; font-weight: bold; color: #ffffff; }
+.ShopRow { width: 400px; height: 34px; margin-left: 10px; background-color: #00000000; }
+.Row0 { margin-top: 44px; } .Row1 { margin-top: 80px; } .Row2 { margin-top: 116px; } .Row3 { margin-top: 152px; }
+.Row4 { margin-top: 188px; } .Row5 { margin-top: 224px; } .Row6 { margin-top: 260px; }
+.ShopRow.stSel { background-color: #ffffff33; }
+.RowText { width: 390px; height: 30px; margin-left: 6px; margin-top: 3px; font-size: 20px; color: #ffffff; }
+.ShopRow.stOff .RowText { color: #808080; }
+.ShopHelp { width: 400px; height: 24px; margin-left: 10px; margin-top: 304px; font-size: 16px; color: #c0c0c0; }

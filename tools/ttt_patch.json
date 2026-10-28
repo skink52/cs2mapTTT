@@ -1,0 +1,5 @@
+{"group": "ttt",
+ "add": [
+  {"classname": "point_script", "origin": [0, 0, 0], "targetname": "ttt_script", "cs_script": "maps/scripts/ttt.vjs"},
+  {"classname": "custom_hud_layout", "origin": [0, 0, 16], "targetname": "ttt_hud", "layout": "panorama/layout/custom_game/ttt_hud.vxml", "observable": "1"}
+ ]}

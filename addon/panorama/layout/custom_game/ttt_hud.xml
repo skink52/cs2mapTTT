@@ -1,0 +1,29 @@
+<root>
+	<styles>
+		<include src="file://{resources}/styles/custom_game/ttt_hud.css" />
+	</styles>
+	<Panel class="TttHost" hittest="false">
+		<Panel id="Ttt" class="Ttt" hittest="false">
+			<Panel id="Mask" class="Mask" hittest="false" />
+			<Panel class="RoleBox" hittest="false">
+				<Label id="Role" class="RoleText" hittest="false" text="{s:role}" />
+				<Label id="Sub" class="SubText" hittest="false" text="{s:sub}" />
+			</Panel>
+			<Label id="Info" class="InfoText" hittest="false" text="{s:info}" />
+			<Label id="Track" class="TrackText" hittest="false" text="{s:track}" />
+			<Label id="MsgA" class="MsgA" hittest="false" text="{s:msga}" />
+			<Label id="MsgB" class="MsgB" hittest="false" text="{s:msgb}" />
+			<Panel id="ShopBox" class="ShopBox" hittest="false">
+				<Label id="ShopTitle" class="ShopTitle" hittest="false" text="{s:title}" />
+				<Button id="Shop0" class="ShopRow Row0"><Label id="ShopL0" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop1" class="ShopRow Row1"><Label id="ShopL1" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop2" class="ShopRow Row2"><Label id="ShopL2" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop3" class="ShopRow Row3"><Label id="ShopL3" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop4" class="ShopRow Row4"><Label id="ShopL4" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop5" class="ShopRow Row5"><Label id="ShopL5" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Button id="Shop6" class="ShopRow Row6"><Label id="ShopL6" class="RowText" hittest="false" text="{s:row}" /></Button>
+				<Label class="ShopHelp" hittest="false" text="W/S select   E buy   F close" />
+			</Panel>
+		</Panel>
+	</Panel>
+</root>

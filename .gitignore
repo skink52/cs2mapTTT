@@ -1,0 +1,4 @@
+*.vmap
+*.vpk
+*_c
+node_modules/
