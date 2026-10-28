@@ -11,7 +11,9 @@ Setup: 3+ humans (or 2 + `MIN_PLAYERS 2` for a look), `bot_quota 0`, map with bo
 7. Last traitor dies → INNOCENTS WIN, round ends with CT win; all innocents die → TRAITORS WIN with T win.
 8. Clock: 3:30 + 20 s per innocent death; time out → innocents win.
 9. Karma drops after team damage; next round's damage scaled.
+11. Hold E on a crate: it floats in front of you and follows; E drops, R throws; standing on it drops it.
+12. With the body template: a death leaves one ragdoll (no second client ragdoll, no tiny one), it can be carried, and E on it still identifies it.
 10. Late joiner during the round spectates; reconnect doesn't keep an old role.
 
-Unverified mechanics to watch: `PREVENT_DEATH` + world kill (does the victim ever stay on 1 hp?), `SetMoveType(NONE)` while shopping,
+Unverified mechanics to watch: velocity on `prop_ragdoll` (moves the whole body?), `SetModelScale(0.02)` hiding the client ragdoll, `PREVENT_DEATH` + world kill (does the victim ever stay on 1 hp?), `SetMoveType(NONE)` while shopping,
 `FireWinCondition` reasons, voice cvars, `SHOP_CURSOR` clicks, `KILLFEED_MASK` vs CS2's killfeed layer.

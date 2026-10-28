@@ -1,5 +1,5 @@
 // ttt.js: Trouble in Terrorist Town for any CS2 map, one cs_script. AI-generated (Claude), MIT. github.com/skink52/cs2mapTTT
-import { Instance, CSPlayerPawn, CSPlayerController, CustomHudLayout, CSGearSlot, CSWeaponType, CSInputs,
+import { Instance, CSPlayerPawn, CSPlayerController, CustomHudLayout, PointTemplate, BaseModelEntity, CSGearSlot, CSWeaponType, CSInputs,
          CSDamageFlags, CSDamageTypes, CSRoundEndReason, CSMoveType } from "cs_script/point_script";
 
 const CONFIG = {
@@ -33,6 +33,12 @@ const CONFIG = {
     DETECTIVE_TINT: { r: 120, g: 160, b: 255, a: 255 },
     HUD_NAME: "ttt_hud",
     HUD_BUDGET: 600,
+    CARRY: true,
+    CARRY_CLASSES: ["prop_physics", "prop_physics_multiplayer", "prop_physics_override", "prop_ragdoll", "func_physbox"],
+    CARRY_RANGE: 110, CARRY_HOLD_TIME: 0.35, CARRY_DIST: 70, CARRY_GAIN: 12, CARRY_MAX_SPEED: 900, CARRY_BREAK_DIST: 200, CARRY_THROW: 550,
+    BODY_TEMPLATE: "ttt_body_tpl",
+    BODY_MAX: 48,
+    HIDE_CLIENT_RAGDOLL: true,
 };
 
 const SHOP = {
@@ -86,6 +92,12 @@ class PState {
         this.hud = new Map();
         this.loadoutAt = 0;
         this.ctrl = null;
+        this.hold = null;
+        this.useAt = -1;
+        this.grabTried = false;
+        this.pendingAttacker = undefined;
+        this.deathModel = "";
+        this.scaled = false;
         this.radarText = "";
     }
 }
@@ -268,11 +280,11 @@ function announce(text, secs = 7) { globalMsg = text; globalMsgUntil = now + sec
 
 // ------------------------------------------------------------------ rounds
 function onRoundStart() {
-    roundEnded = false; endFallbackAt = 0; bodies = []; killQueue = []; deathsSinceCredit = 0; globalMsgUntil = 0;
+    roundEnded = false; endFallbackAt = 0; bodies = []; heldBy.clear(); killQueue = []; deathsSinceCredit = 0; globalMsgUntil = 0;
     for (const p of players.values()) {
         if (p.role && p.cleanRound) p.karma = Math.min(CONFIG.KARMA_MAX, p.karma + CONFIG.KARMA_CLEAN_ROUND);
         p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
-        p.lastHit = null; p.pendingKill = false; closeShop(p); p.msgUntil = 0;
+        p.lastHit = null; p.pendingKill = false; closeShop(p); p.msgUntil = 0; p.hold = null;
     }
     if (Instance.IsWarmupPeriod()) { phase = P_WAIT; applyCvars(true); return; }
     phase = P_PREP; phaseEnd = now + CONFIG.PREP_TIME;
@@ -394,12 +406,16 @@ function buy(p, pawn, idx) {
     tell(p.slot, "Bought " + it.name, 3);
 }
 
-const KEYS = [CSInputs.FORWARD, CSInputs.BACK, CSInputs.USE, CSInputs.LOOK_AT_WEAPON, CSInputs.JUMP];
+const KEYS = [CSInputs.FORWARD, CSInputs.BACK, CSInputs.USE, CSInputs.LOOK_AT_WEAPON, CSInputs.JUMP, CSInputs.RELOAD];
 function playerInput(p, c, pawn) {
-    if (phase < P_ACTIVE) { p.prevKeys = 0; return; }
+    if (phase === P_WAIT && !CONFIG.CARRY) { p.prevKeys = 0; return; }
     let keys = 0;
-    const n = p.shopOpen ? 5 : SHOP[p.role] && phase === P_ACTIVE ? 4 : 3;
-    for (let i = p.shopOpen ? 0 : 2; i < n; i++) if (pawn.IsInputPressed(KEYS[i])) keys |= 1 << i;
+    if (p.shopOpen) { for (let i = 0; i < 5; i++) if (pawn.IsInputPressed(KEYS[i])) keys |= 1 << i; }
+    else {
+        if (pawn.IsInputPressed(CSInputs.USE)) keys |= 4;
+        if (SHOP[p.role] && phase === P_ACTIVE && pawn.IsInputPressed(CSInputs.LOOK_AT_WEAPON)) keys |= 8;
+        if (p.hold && pawn.IsInputPressed(CSInputs.RELOAD)) keys |= 32;
+    }
     const down = keys & ~p.prevKeys;
     p.prevKeys = keys;
     if (p.shopOpen) {
@@ -413,7 +429,78 @@ function playerInput(p, c, pawn) {
     if (down & 8) {
         if (now - p.lastF < 0.45 && SHOP[p.role]) { openShop(p, pawn); p.lastF = -10; } else p.lastF = now;
     }
-    if ((down & 4) && phase >= P_ACTIVE) searchBody(p, pawn);
+    if (p.hold) {
+        if (down & 4) { drop(p, null); p.grabTried = true; }
+        else if (down & 32) drop(p, pawn);
+    } else if (down & 4) {
+        p.useAt = now; p.grabTried = false;
+        if (phase >= P_ACTIVE) searchBody(p, pawn);
+    } else if ((keys & 4) && CONFIG.CARRY && !p.grabTried && now - p.useAt >= CONFIG.CARRY_HOLD_TIME) {
+        p.grabTried = true; tryGrab(p, pawn);
+    }
+    if (p.hold) carry(p, pawn);
+}
+
+// ------------------------------------------------------------------ carrying (props and bodies)
+const heldBy = new Map();
+function forward(a) {
+    const py = a.pitch * Math.PI / 180, yw = a.yaw * Math.PI / 180;
+    return { x: Math.cos(py) * Math.cos(yw), y: Math.cos(py) * Math.sin(yw), z: -Math.sin(py) };
+}
+function tryGrab(p, pawn) {
+    const eye = pawn.GetEyePosition(), f = forward(pawn.GetEyeAngles()), r = CONFIG.CARRY_RANGE;
+    const tr = Instance.TraceLine({ start: eye, end: { x: eye.x + f.x * r, y: eye.y + f.y * r, z: eye.z + f.z * r }, ignoreEntity: pawn });
+    let e = tr.didHit ? tr.hitEntity : undefined;
+    if (!e || e instanceof CSPlayerPawn || e.IsWorld()) return;
+    if (!CONFIG.CARRY_CLASSES.includes(e.GetClassName()) && !bodies.some(b => b.ent === e)) return;
+    if (heldBy.has(e) || pawn.GetGroundEntity() === e) return;
+    p.hold = e; heldBy.set(e, p.slot);
+}
+function drop(p, throwerPawn) {
+    const e = p.hold;
+    p.hold = null;
+    if (!e) return;
+    heldBy.delete(e);
+    if (!throwerPawn) return;
+    try {
+        const f = forward(throwerPawn.GetEyeAngles()), v = throwerPawn.GetAbsVelocity(), t = CONFIG.CARRY_THROW;
+        e.Teleport({ velocity: { x: v.x + f.x * t, y: v.y + f.y * t, z: v.z + f.z * t + 80 } });
+    } catch (err) { }
+}
+function carry(p, pawn) {
+    const e = p.hold;
+    try {
+        if (!e.IsValid() || pawn.GetGroundEntity() === e) { drop(p, null); return; }
+        const eye = pawn.GetEyePosition(), f = forward(pawn.GetEyeAngles()), d = CONFIG.CARRY_DIST;
+        const o = e.GetAbsOrigin();
+        const dx = eye.x + f.x * d - o.x, dy = eye.y + f.y * d - o.y, dz = eye.z + f.z * d - 12 - o.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist > CONFIG.CARRY_BREAK_DIST) { drop(p, null); return; }
+        let k = CONFIG.CARRY_GAIN;
+        if (dist * k > CONFIG.CARRY_MAX_SPEED) k = CONFIG.CARRY_MAX_SPEED / dist;
+        e.Teleport({ velocity: { x: dx * k, y: dy * k, z: dz * k }, angularVelocity: { x: 0, y: 0, z: 0 } });
+    } catch (err) { drop(p, null); }
+}
+function bodyPos(b) {
+    if (b.ent) { try { if (b.ent.IsValid()) return b.ent.GetAbsOrigin(); } catch (e) { } b.ent = null; }
+    return b.pos;
+}
+function bodyTemplate() {
+    const t = Instance.FindEntityByName(CONFIG.BODY_TEMPLATE);
+    return t instanceof PointTemplate ? t : undefined;
+}
+function spawnBody(pawn, model) {
+    const tpl = bodyTemplate();
+    if (!tpl || bodies.length >= CONFIG.BODY_MAX) return null;
+    try {
+        const o = pawn.GetAbsOrigin(), v = pawn.GetAbsVelocity();
+        const ents = tpl.ForceSpawn({ x: o.x, y: o.y, z: o.z + 8 }, { pitch: 0, yaw: pawn.GetAbsAngles().yaw, roll: 0 });
+        const e = ents && ents[0];
+        if (!e) return null;
+        if (model && e instanceof BaseModelEntity) e.SetModel(model);
+        e.Teleport({ velocity: v });
+        return e;
+    } catch (err) { log("body spawn failed " + err); return null; }
 }
 
 // ------------------------------------------------------------------ bodies
@@ -424,7 +511,8 @@ function searchBody(p, pawn) {
     const f = { x: Math.cos(py) * Math.cos(yw), y: Math.cos(py) * Math.sin(yw), z: -Math.sin(py) };
     let best = null, bestDot = CONFIG.BODY_CONE;
     for (const b of bodies) {
-        const dx = b.pos.x - eye.x, dy = b.pos.y - eye.y, dz = b.pos.z + 12 - eye.z;
+        const bp = bodyPos(b);
+        const dx = bp.x - eye.x, dy = bp.y - eye.y, dz = bp.z + 12 - eye.z;
         const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (d > CONFIG.BODY_RANGE + 40) continue;
         const dot = d < 40 ? 1 : (dx * f.x + dy * f.y + dz * f.z) / d;
@@ -461,14 +549,18 @@ function onDeath(pawn, attacker, weapon) {
     const p = st(vs);
     p.pendingKill = false;
     closeShop(p);
-    if (phase < P_ACTIVE || !p.role) return;
+    if (p.hold) drop(p, null);
+    if (!p.deathModel) { try { p.deathModel = pawn.GetModelName(); } catch (e) { } }
+    if (phase < P_ACTIVE || !p.role) { p.deathModel = ""; return; }
     let ks = slotOf(attacker);
     const hit = p.lastHit && now - p.lastHit.t < 15 ? p.lastHit : null;
     if ((ks < 0 || ks === vs) && hit) ks = hit.slot;
     const wname = weapon ? weaponName(weapon) : null;
     let pos;
     try { pos = pawn.GetAbsOrigin(); } catch (e) { pos = { x: 0, y: 0, z: 0 }; }
-    bodies.push({ slot: vs, name: p.name || "someone", role: p.role, pos, time: now, killerSlot: ks, weapon: wname || weaponLabel(hit), found: false, dnaTaken: false });
+    const ent = spawnBody(pawn, p.deathModel);
+    p.deathModel = "";
+    bodies.push({ slot: vs, name: p.name || "someone", role: p.role, pos, ent, time: now, killerSlot: ks, weapon: wname || weaponLabel(hit), found: false, dnaTaken: false });
     if (phase !== P_ACTIVE) return;
     const k = ks >= 0 && ks !== vs ? players.get(ks) : undefined;
     if (k && k.role) {
@@ -506,8 +598,11 @@ Instance.OnModifyPlayerDamage((ev) => {
             try { if (ev.weapon.GetData().GetType() === CSWeaponType.KNIFE) { dmg = 500; a.knife = false; changed = true; } } catch (e) { }
         }
     }
-    if (CONFIG.HIDE_KILLER && phase === P_ACTIVE && as >= 0 && as !== vs && vs >= 0 && dmg >= victim.GetHealth()) {
-        st(vs).pendingKill = true;
+    const byPlayer = as >= 0 && as !== vs;
+    if (vs >= 0 && phase === P_ACTIVE && dmg >= victim.GetHealth() && ((CONFIG.HIDE_KILLER && byPlayer) || (CONFIG.HIDE_CLIENT_RAGDOLL && bodyTemplate()))) {
+        const v = st(vs);
+        v.pendingKill = true;
+        v.pendingAttacker = !CONFIG.HIDE_KILLER && byPlayer ? ev.attacker : undefined;
         return { damage: Math.max(1, Math.round(dmg)), damageFlags: ev.damageFlags | CSDamageFlags.PREVENT_DEATH };
     }
     if (changed) return { damage: Math.max(1, Math.round(dmg)) };
@@ -536,8 +631,13 @@ function runKills() {
     while (killQueue.length) {
         const vs = killQueue.shift(), p = st(vs), pawn = pawnOf(vs);
         if (!pawn || !pawn.IsAlive()) { p.pendingKill = false; continue; }
+        try { p.deathModel = pawn.GetModelName(); } catch (e) { p.deathModel = ""; }
+        if (CONFIG.HIDE_CLIENT_RAGDOLL && bodyTemplate()) { try { pawn.SetModelScale(0.02); p.scaled = true; } catch (e) { } }
+        let attacker = p.pendingAttacker;
+        try { if (attacker && !attacker.IsValid()) attacker = undefined; } catch (e) { attacker = undefined; }
+        p.pendingAttacker = undefined;
         killing = true;
-        try { pawn.TakeDamage({ damage: 1000, damageTypes: CSDamageTypes.GENERIC, damageFlags: CSDamageFlags.FORCE_DEATH | CSDamageFlags.IGNORE_ARMOR }); }
+        try { pawn.TakeDamage({ damage: 1000, attacker, inflictor: attacker, damageTypes: attacker ? CSDamageTypes.BULLET : CSDamageTypes.GENERIC, damageFlags: CSDamageFlags.FORCE_DEATH | CSDamageFlags.IGNORE_ARMOR }); }
         catch (e) { log("kill failed " + e); }
         finally { killing = false; }
         if (pawn.IsValid() && pawn.IsAlive()) { log("hidden kill blocked; check plugins/damage settings"); p.pendingKill = false; }
@@ -554,11 +654,13 @@ Instance.OnPlayerActivate(({ player }) => {
     const s = player.GetPlayerSlot(), p = st(s); p.name = clean(player.GetPlayerName()); resetHud(s);
     if (CONFIG.TRY_HIDE_KILLFEED) Instance.ClientCommand(s, "cl_drawhud_force_deathnotices -1");
 });
-Instance.OnPlayerDisconnect(({ playerSlot }) => { players.delete(playerSlot); for (const b of bodies) if (b.killerSlot === playerSlot) b.killerSlot = -1; });
+Instance.OnPlayerDisconnect(({ playerSlot }) => { const q = players.get(playerSlot); if (q && q.hold) drop(q, null); players.delete(playerSlot); for (const b of bodies) if (b.killerSlot === playerSlot) b.killerSlot = -1; });
 Instance.OnPlayerReset(({ player }) => {
     const s = slotOf(player);
     if (s < 0) return;
     const p = st(s); p.frozen = false; p.shopOpen = false; p.pendingKill = false; p.hud.clear();
+    if (p.hold) drop(p, null);
+    if (p.scaled) { p.scaled = false; try { player.SetModelScale(1); } catch (e) { } }
     try { p.name = clean(player.GetPlayerController().GetPlayerName()); } catch (e) { }
     tint(player, false);
     if (phase === P_ACTIVE && !p.role) {
