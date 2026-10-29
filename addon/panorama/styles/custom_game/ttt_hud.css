@@ -65,66 +65,75 @@
 .Ttt.stTop .TopCover { opacity: 1; }
 .TopText { width: 900px; height: 60px; margin-top: 12px; text-align: center; font-size: 40px; font-weight: bold; color: #ffffff; }
 
-.Sb { width: 1240px; height: 900px; horizontal-align: center; margin-top: 90px; background-color: #0a0a0a; border: 2px solid #3a3a3a; border-radius: 4px; opacity: 0; }
+.Sb { width: 1240px; height: 920px; horizontal-align: center; margin-top: 80px; background-color: #1c1c1c; border: 1px solid #000000; border-radius: 8px; opacity: 0; }
 .HUD_SCOREBOARD_VISIBLE .Sb.stOn { opacity: 1; }
-.SbTitle { width: 800px; height: 44px; margin-left: 20px; margin-top: 14px; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
-.SbSub { width: 380px; height: 30px; horizontal-align: right; margin-right: 20px; margin-top: 24px; text-align: right; font-size: 20px; color: #c0c0c0; }
-.SbRow { width: 590px; height: 31px; background-color: #ffffff08; }
-.SbRow.stHead { background-color: #ffffff1a; }
-.SbRow.stMe { background-color: #ffffff30; }
-.SbName { width: 470px; height: 28px; margin-left: 10px; margin-top: 2px; font-size: 21px; color: #e8e8e8; }
-.SbKarma { width: 100px; height: 28px; margin-left: 480px; margin-top: 2px; text-align: right; font-size: 21px; color: #c0c0c0; }
-.SbRow.stHead .SbName, .SbRow.stHead .SbKarma { color: #f0c040; font-weight: bold; }
-.SbRow.stDet .SbName { color: #6f9fff; }
-.SbRow.stTra .SbName { color: #ff4a4a; }
-.SbRow.stMia .SbName { color: #e0b050; }
-.SbRow.stDead .SbName, .SbRow.stDead .SbKarma { color: #7a7a7a; }
-.SbRow.stSpec .SbName { color: #a0a0a0; }
-.SbP0 { margin-left: 20px; margin-top: 80px; }
-.SbP1 { margin-left: 20px; margin-top: 113px; }
-.SbP2 { margin-left: 20px; margin-top: 146px; }
-.SbP3 { margin-left: 20px; margin-top: 179px; }
-.SbP4 { margin-left: 20px; margin-top: 212px; }
-.SbP5 { margin-left: 20px; margin-top: 245px; }
-.SbP6 { margin-left: 20px; margin-top: 278px; }
-.SbP7 { margin-left: 20px; margin-top: 311px; }
-.SbP8 { margin-left: 20px; margin-top: 344px; }
-.SbP9 { margin-left: 20px; margin-top: 377px; }
-.SbP10 { margin-left: 20px; margin-top: 410px; }
-.SbP11 { margin-left: 20px; margin-top: 443px; }
-.SbP12 { margin-left: 20px; margin-top: 476px; }
-.SbP13 { margin-left: 20px; margin-top: 509px; }
-.SbP14 { margin-left: 20px; margin-top: 542px; }
-.SbP15 { margin-left: 20px; margin-top: 575px; }
-.SbP16 { margin-left: 20px; margin-top: 608px; }
-.SbP17 { margin-left: 20px; margin-top: 641px; }
-.SbP18 { margin-left: 20px; margin-top: 674px; }
-.SbP19 { margin-left: 20px; margin-top: 707px; }
-.SbP20 { margin-left: 20px; margin-top: 740px; }
-.SbP21 { margin-left: 20px; margin-top: 773px; }
-.SbP22 { margin-left: 20px; margin-top: 806px; }
-.SbP23 { margin-left: 20px; margin-top: 839px; }
-.SbP24 { margin-left: 630px; margin-top: 80px; }
-.SbP25 { margin-left: 630px; margin-top: 113px; }
-.SbP26 { margin-left: 630px; margin-top: 146px; }
-.SbP27 { margin-left: 630px; margin-top: 179px; }
-.SbP28 { margin-left: 630px; margin-top: 212px; }
-.SbP29 { margin-left: 630px; margin-top: 245px; }
-.SbP30 { margin-left: 630px; margin-top: 278px; }
-.SbP31 { margin-left: 630px; margin-top: 311px; }
-.SbP32 { margin-left: 630px; margin-top: 344px; }
-.SbP33 { margin-left: 630px; margin-top: 377px; }
-.SbP34 { margin-left: 630px; margin-top: 410px; }
-.SbP35 { margin-left: 630px; margin-top: 443px; }
-.SbP36 { margin-left: 630px; margin-top: 476px; }
-.SbP37 { margin-left: 630px; margin-top: 509px; }
-.SbP38 { margin-left: 630px; margin-top: 542px; }
-.SbP39 { margin-left: 630px; margin-top: 575px; }
-.SbP40 { margin-left: 630px; margin-top: 608px; }
-.SbP41 { margin-left: 630px; margin-top: 641px; }
-.SbP42 { margin-left: 630px; margin-top: 674px; }
-.SbP43 { margin-left: 630px; margin-top: 707px; }
-.SbP44 { margin-left: 630px; margin-top: 740px; }
-.SbP45 { margin-left: 630px; margin-top: 773px; }
-.SbP46 { margin-left: 630px; margin-top: 806px; }
-.SbP47 { margin-left: 630px; margin-top: 839px; }
+.SbTop { width: 100%; height: 68px; background-color: #0e0e0e; border-radius: 8px 8px 0px 0px; }
+.SbTitle { width: 700px; height: 44px; margin-left: 20px; margin-top: 12px; font-size: 34px; font-weight: bold; color: #ffffff; }
+.SbSub { width: 480px; height: 30px; horizontal-align: right; margin-right: 20px; margin-top: 22px; text-align: right; font-size: 20px; color: #9a9a9a; }
+.SbRow { width: 1208px; height: 32px; background-color: #262626; border-radius: 3px; }
+.Sb.stTwo .SbRow { width: 596px; }
+.SbRow.SbAlt { background-color: #2e2e2e; }
+.SbName { width: 70%; height: 28px; margin-left: 12px; margin-top: 3px; font-size: 21px; color: #f0f0f0; }
+.SbScore { width: 90px; height: 28px; horizontal-align: right; margin-right: 110px; margin-top: 3px; text-align: right; font-size: 21px; color: #d0d0d0; }
+.SbKarma { width: 90px; height: 28px; horizontal-align: right; margin-right: 12px; margin-top: 3px; text-align: right; font-size: 21px; color: #d0d0d0; }
+.SbRow.stH0 { background-color: #2d7a35; }
+.SbRow.stH1 { background-color: #9a7a1e; }
+.SbRow.stH2 { background-color: #8a2a24; }
+.SbRow.stH3 { background-color: #4a4a4a; }
+.SbRow.stH0 .SbName, .SbRow.stH1 .SbName, .SbRow.stH2 .SbName, .SbRow.stH3 .SbName { font-weight: bold; color: #ffffff; }
+.SbRow.stH0 .SbKarma, .SbRow.stH1 .SbKarma, .SbRow.stH2 .SbKarma, .SbRow.stH0 .SbScore, .SbRow.stH1 .SbScore, .SbRow.stH2 .SbScore { font-size: 17px; margin-top: 6px; color: #ffffffcc; }
+.SbRow.stMe { border: 1px solid #ffffff60; }
+.SbRow.stDet .SbName { color: #7aa8ff; }
+.SbRow.stTra .SbName { color: #ff5a5a; }
+.SbRow.stMia .SbName { color: #e8c060; }
+.SbRow.stDead .SbName, .SbRow.stDead .SbKarma, .SbRow.stDead .SbScore { color: #8a8a8a; }
+.SbRow.stSpec .SbName { color: #a8a8a8; }
+.SbP0 { margin-left: 16px; margin-top: 84px; }
+.SbP1 { margin-left: 16px; margin-top: 118px; }
+.SbP2 { margin-left: 16px; margin-top: 152px; }
+.SbP3 { margin-left: 16px; margin-top: 186px; }
+.SbP4 { margin-left: 16px; margin-top: 220px; }
+.SbP5 { margin-left: 16px; margin-top: 254px; }
+.SbP6 { margin-left: 16px; margin-top: 288px; }
+.SbP7 { margin-left: 16px; margin-top: 322px; }
+.SbP8 { margin-left: 16px; margin-top: 356px; }
+.SbP9 { margin-left: 16px; margin-top: 390px; }
+.SbP10 { margin-left: 16px; margin-top: 424px; }
+.SbP11 { margin-left: 16px; margin-top: 458px; }
+.SbP12 { margin-left: 16px; margin-top: 492px; }
+.SbP13 { margin-left: 16px; margin-top: 526px; }
+.SbP14 { margin-left: 16px; margin-top: 560px; }
+.SbP15 { margin-left: 16px; margin-top: 594px; }
+.SbP16 { margin-left: 16px; margin-top: 628px; }
+.SbP17 { margin-left: 16px; margin-top: 662px; }
+.SbP18 { margin-left: 16px; margin-top: 696px; }
+.SbP19 { margin-left: 16px; margin-top: 730px; }
+.SbP20 { margin-left: 16px; margin-top: 764px; }
+.SbP21 { margin-left: 16px; margin-top: 798px; }
+.SbP22 { margin-left: 16px; margin-top: 832px; }
+.SbP23 { margin-left: 16px; margin-top: 866px; }
+.SbP24 { margin-left: 628px; margin-top: 84px; opacity: 0; }
+.SbP25 { margin-left: 628px; margin-top: 118px; opacity: 0; }
+.SbP26 { margin-left: 628px; margin-top: 152px; opacity: 0; }
+.SbP27 { margin-left: 628px; margin-top: 186px; opacity: 0; }
+.SbP28 { margin-left: 628px; margin-top: 220px; opacity: 0; }
+.SbP29 { margin-left: 628px; margin-top: 254px; opacity: 0; }
+.SbP30 { margin-left: 628px; margin-top: 288px; opacity: 0; }
+.SbP31 { margin-left: 628px; margin-top: 322px; opacity: 0; }
+.SbP32 { margin-left: 628px; margin-top: 356px; opacity: 0; }
+.SbP33 { margin-left: 628px; margin-top: 390px; opacity: 0; }
+.SbP34 { margin-left: 628px; margin-top: 424px; opacity: 0; }
+.SbP35 { margin-left: 628px; margin-top: 458px; opacity: 0; }
+.SbP36 { margin-left: 628px; margin-top: 492px; opacity: 0; }
+.SbP37 { margin-left: 628px; margin-top: 526px; opacity: 0; }
+.SbP38 { margin-left: 628px; margin-top: 560px; opacity: 0; }
+.SbP39 { margin-left: 628px; margin-top: 594px; opacity: 0; }
+.SbP40 { margin-left: 628px; margin-top: 628px; opacity: 0; }
+.SbP41 { margin-left: 628px; margin-top: 662px; opacity: 0; }
+.SbP42 { margin-left: 628px; margin-top: 696px; opacity: 0; }
+.SbP43 { margin-left: 628px; margin-top: 730px; opacity: 0; }
+.SbP44 { margin-left: 628px; margin-top: 764px; opacity: 0; }
+.SbP45 { margin-left: 628px; margin-top: 798px; opacity: 0; }
+.SbP46 { margin-left: 628px; margin-top: 832px; opacity: 0; }
+.SbP47 { margin-left: 628px; margin-top: 866px; opacity: 0; }
+.Sb.stTwo .SbP24, .Sb.stTwo .SbP25, .Sb.stTwo .SbP26, .Sb.stTwo .SbP27, .Sb.stTwo .SbP28, .Sb.stTwo .SbP29, .Sb.stTwo .SbP30, .Sb.stTwo .SbP31, .Sb.stTwo .SbP32, .Sb.stTwo .SbP33, .Sb.stTwo .SbP34, .Sb.stTwo .SbP35, .Sb.stTwo .SbP36, .Sb.stTwo .SbP37, .Sb.stTwo .SbP38, .Sb.stTwo .SbP39, .Sb.stTwo .SbP40, .Sb.stTwo .SbP41, .Sb.stTwo .SbP42, .Sb.stTwo .SbP43, .Sb.stTwo .SbP44, .Sb.stTwo .SbP45, .Sb.stTwo .SbP46, .Sb.stTwo .SbP47 { opacity: 1; }

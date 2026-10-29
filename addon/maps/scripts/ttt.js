@@ -191,7 +191,7 @@ function applyCvars(respawn) {
         "mp_ignore_round_win_conditions 1", "mp_roundtime 15", "mp_round_restart_delay " + CONFIG.POST_TIME, "mp_give_player_c4 0",
         "mp_buy_anywhere 0", "mp_buytime 0", "mp_startmoney 0", "mp_maxmoney 0", "mp_afterroundmoney 0", "mp_playercashawards 0",
         "mp_teamcashawards 0", "mp_free_armor 0", "sv_disable_radar 1", "mp_solid_teammates 1", "mp_death_drop_gun 1",
-        "sv_alltalk 1", "sv_deadtalk 0", "sv_talk_enemy_dead 0", "sv_talk_enemy_living 1", "mp_halftime 0",
+        "sv_alltalk 0", "sv_deadtalk 0", "sv_talk_enemy_dead 0", "sv_talk_enemy_living 1", "mp_halftime 0",
         "mp_respawn_on_death_t " + (respawn ? 1 : 0), "mp_respawn_on_death_ct " + (respawn ? 1 : 0),
     ].join(";"));
 }
@@ -285,8 +285,8 @@ function drawHud(p, c) {
     hudVar(p, K + "Track", "track", track);
     hudVar(p, "MsgA", "msga", now < globalMsgUntil ? globalMsg : "");
     hudVar(p, "MsgB", "msgb", now < p.msgUntil ? p.msg : "");
-    hudCls(p, "Ttt", "stTop", CONFIG.COVER_TOPBAR && phase >= P_ACTIVE);
-    if (CONFIG.COVER_TOPBAR && phase >= P_ACTIVE) hudVar(p, "TopT", "t", phase === P_POST ? "ROUND OVER" : (p.role === R_TRA || !alive ? "" : "HASTE ") + mmss(left));
+    hudCls(p, "Ttt", "stTop", CONFIG.COVER_TOPBAR);
+    if (CONFIG.COVER_TOPBAR) hudVar(p, "TopT", "t", phase === P_WAIT ? "WAITING" : phase === P_PREP ? "PREP " + mmss(left) : phase === P_POST ? "ROUND OVER" : (p.role === R_TRA || !alive ? "" : "HASTE ") + mmss(left));
     if (CONFIG.SCOREBOARD && (now >= p.sbAt || (alive && pawn.IsInputPressed(CSInputs.SHOW_SCORES)))) { p.sbAt = now + 1; drawBoard(p, alive); }
     const items = SHOP[p.role] || [];
     const open = p.shopOpen && alive;
@@ -301,7 +301,7 @@ function drawHud(p, c) {
         }
     }
 }
-const SB_ROWS = 48, SB_KINDS = ["stHead", "stDet", "stTra", "stMia", "stDead", "stSpec"];
+const SB_ROWS = 48, SB_HALF = 24, SB_KINDS = ["stH0", "stH1", "stH2", "stH3", "stDet", "stTra", "stMia", "stDead", "stSpec"];
 let sbCache = { at: -1, views: [] };
 function boardRows(view) {
     if (sbCache.at !== tick) sbCache = { at: tick, views: [] };
@@ -314,7 +314,7 @@ function boardRows(view) {
         const team = c.GetTeamNumber(), al = isAlive(slot);
         const name = q.name || c.GetPlayerName() || "player";
         const role = live && q.role ? ROLE_NAME[q.role] : "";
-        const row = { t: name, k: String(Math.round(q.karma)), c: "", slot };
+        const row = { t: name, k: String(Math.round(q.karma)), s: String(c.GetScore()), c: "", slot };
         if (live ? !q.role : team !== 2 && team !== 3) { row.c = "stSpec"; g[3].push(row); continue; }
         let gi = 0;
         if (!al && q.confirmed) { gi = 2; row.c = "stDead"; row.t += "  (" + role + ")"; }
@@ -325,12 +325,12 @@ function boardRows(view) {
         }
         g[gi].push(row);
     }
-    const titles = ["TERRORISTS", "MISSING IN ACTION", "CONFIRMED DEAD", "SPECTATORS"];
+    const titles = ["Terrorists", "Missing in action", "Confirmed dead", "Spectators"];
     const rows = [];
     for (let i = 0; i < 4; i++) {
         if (i && !g[i].length) continue;
         g[i].sort((a, b) => a.t.toLowerCase() < b.t.toLowerCase() ? -1 : 1);
-        rows.push({ t: titles[i] + "  (" + g[i].length + ")", k: i === 0 ? "KARMA" : "", c: "stHead", slot: -1 });
+        rows.push({ t: titles[i] + "  (" + g[i].length + ")", k: i === 3 ? "" : "Karma", s: i === 3 ? "" : "Score", c: "stH" + i, slot: -1 });
         for (const r of g[i]) rows.push(r);
     }
     sbCache.views[view] = rows;
@@ -340,12 +340,14 @@ function drawBoard(p, alive) {
     const view = phase === P_POST || !alive ? 2 : p.role === R_TRA && phase >= P_ACTIVE ? 1 : 0;
     const rows = boardRows(view);
     hudCls(p, "Sb", "stOn", true);
-    hudVar(p, "SbSub", "sub", phase === P_WAIT ? "Waiting for players" : phase === P_PREP ? "Preparing" : phase === P_POST ? "Round over" : "Round in progress");
+    hudVar(p, "SbSub", "sub", Instance.GetMapName() + "   " + (phase === P_WAIT ? "waiting for players" : phase === P_PREP ? "preparing" : phase === P_POST ? "round over" : "round in progress"));
+    hudCls(p, "Sb", "stTwo", rows.length > SB_HALF);
     for (let i = 0; i < SB_ROWS; i++) {
         let r = rows[i];
-        if (i === SB_ROWS - 1 && rows.length > SB_ROWS) r = { t: "+" + (rows.length - SB_ROWS + 1) + " more", k: "", c: "stHead", slot: -1 };
+        if (i === SB_ROWS - 1 && rows.length > SB_ROWS) r = { t: "+" + (rows.length - SB_ROWS + 1) + " more", k: "", s: "", c: "stH3", slot: -1 };
         hudVar(p, "SbN" + i, "n", r ? r.t : "");
         hudVar(p, "SbK" + i, "k", r ? r.k : "");
+        hudVar(p, "SbS" + i, "s", r ? r.s : "");
         for (const k of SB_KINDS) hudCls(p, "SbR" + i, k, !!r && r.c === k);
         hudCls(p, "SbR" + i, "stMe", !!r && r.slot === p.slot);
     }

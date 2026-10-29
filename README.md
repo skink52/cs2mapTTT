@@ -46,7 +46,7 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Bodies | E on a body: everyone learns name + role. Detective: weapon, time, and a 45 s DNA trail to the killer. |
 | Shop | Traitor/detective: hold F. W/S select, E buy, F/jump close. Credits from deaths. |
 | CS2 HUD | Kept (`HIDE_NATIVE_HUD` off): normal weapon switching and chat. The TTT panel sits over the killfeed, and every death reads as a world death. `HIDE_NATIVE_HUD: true` hides CS2's HUD while alive in a live round (tap F = next weapon, Ctrl+F = chat for 15 s, chat mirrored on the TTT HUD). |
-| Scoreboard | Tab shows the TTT scoreboard drawn over CS2's (`SCOREBOARD`): Terrorists / Missing in action / Confirmed dead / Spectators, karma. Living players see the dead as alive until the body is found; traitors see traitors in red, detectives show blue to all; the dead see everything. `COVER_TOPBAR` covers CS2's top bar (alive avatars, clock) with the TTT clock during the round. The TTT panel over the killfeed is opaque. |
+| Scoreboard | Tab shows the TTT scoreboard drawn over CS2's (`SCOREBOARD`): Terrorists / Missing in action / Confirmed dead / Spectators, karma. Living players see the dead as alive until the body is found; traitors see traitors in red, detectives show blue to all; the dead see everything. `COVER_TOPBAR` covers CS2's top bar (alive avatars, clock) with the TTT clock. The TTT panel over the killfeed is opaque. |
 | Karma | Damaging your own side costs karma; low karma scales your damage down (min 40%). |
 | Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
 | Carry | Hold E on a physics prop to pick it up; E drops, R throws. Can't stand on what you hold. Bodies: `CARRY_BODIES` (off, see Limits). |
@@ -64,6 +64,8 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (unverified that CS2 draws it above the feed; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
 - Server crash (29 Oct, from the minidump): `SetModel` on a freshly spawned `prop_ragdoll`, then `Teleport`, crashed in the ragdoll's Teleport (empty bone list). Bodies keep the template model and are never Teleported; `CARRY_BODIES` and `BODY_SET_MODEL` stay off until proven safe.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.
+- The Esc menu shows CS2's scoreboard (dead players marked); the custom HUD isn't drawn over menus.
+- Chat from dead players carries CS2's `*DEAD*` tag (set by the engine). `sv_deadtalk 0` with `sv_alltalk 0` should keep dead text from the living (unverified in CS2).
 - Bots shoot everyone (`mp_teammates_are_enemies 1`); use `bot_quota 0`.
 - Scoreboard shows who is dead. Dead/alive voice: `sv_deadtalk 0`, `sv_talk_enemy_dead 0` (cvar names unverified in CS2).
 - Plugins that force teams, respawn, spawn protection or TK punishment break it.
