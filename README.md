@@ -1,6 +1,6 @@
 # cs2mapTTT: Trouble in Terrorist Town for any CS2 map
 
-> **AI-generated code.** Written by Claude (Anthropic) for skink52. MIT licence. Tested on a mock engine only until the TESTING notes say otherwise.
+> **AI-generated code.** Written by Claude (Anthropic) for skink52. Free for non-commercial use (see Licence). Tested on a mock engine only until the TESTING notes say otherwise.
 
 One cs_script (`ttt.js`) plus an optional HUD. No server plugins. Works on any map once the map has a `point_script` pointing at it.
 
@@ -74,3 +74,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 ## Test
 
 `sh test/run_mock.sh <path to cs2mapping clone>`: type-check plus mock-engine scenarios (churn, silent slot changes, warmup, 64 players).
+
+## Licence
+
+Free for non-commercial use: copy, change, share and run it, including on game servers (donation/VIP servers are fine). Not to be sold, paywalled or built into a paid product or service. Code: [PolyForm Noncommercial 1.0.0](LICENSE). Art, models, sounds and maps: [CC BY-NC 4.0](LICENSE-CC-BY-NC-4.0.txt).
