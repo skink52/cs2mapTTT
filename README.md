@@ -16,6 +16,25 @@ One cs_script (`ttt.js`) plus an optional HUD. No server plugins. Works on any m
 
 A map's `info_map_parameters` is used to end rounds if present; otherwise the round clock is used.
 
+### Maps made for TTT (ttt_* entities)
+
+`python3 tools/ttt_convert.py <in.vmap> <out.vmap> <map name> --cs2mapping ../cs2mapping` turns the GMod/CS:GO TTT entities CS2 doesn't have into
+relays driven by `ttt.js`, re-aims every input at them, adds the TTT entities (and an `info_map_parameters` if missing), and writes `maps/<map>.json`.
+Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one script for every map; it picks its entry by map name).
+
+| Entity | In CS2 |
+|---|---|
+| `ttt_traitor_button` | Traitors aim at it and press E (hint on the HUD); fires `<id>__pressed`. RemoveOnPress, wait, usable_range, Lock/Unlock/Kill kept. |
+| `ttt_traitor_check` | Box from its brush; CheckForTraitor fires `<id>__found` with the activator (the traitor count isn't passed on). |
+| `ttt_logic_role` | TestActivator → `<id>__pass` / `<id>__fail` (Role 0 innocent, 1 traitor, 2 detective, 3 any). |
+| `ttt_game_text` | Display → HUD message to activator / all / detectives / traitors / innocents. |
+| `ttt_map_settings` | RoundPreparation / RoundStart / RoundEnd → `ttt_ms__prep` / `__start` / `__end`. |
+| `ttt_damageowner` | Kills by its trigger_hurt credit the presser (DNA, body info shows the trap name). |
+| `ttt_credit_adjust`, `ttt_win` | Credits taken from the activator (`__ok` / `__fail`); TraitorWin / InnocentWin end the round. |
+| `weapon_ttt_*`, `weapon_zm_*` | Nearest CS2 weapon. |
+
+`GIVE_PRIMARY: "auto"` skips the free primary when the map has its own weapons lying around (`MAP_WEAPONS_ENOUGH`).
+
 ## Gameplay
 
 | | |

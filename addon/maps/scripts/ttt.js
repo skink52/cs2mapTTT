@@ -17,7 +17,9 @@ const CONFIG = {
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
     HIDE_NATIVE_HUD: true,
-    GIVE_PRIMARY: true,
+    GIVE_PRIMARY: "auto",
+    MAP_WEAPONS_ENOUGH: 10,
+    BUTTON_CONE: 0.97,
     PRIMARIES: ["weapon_ak47", "weapon_m4a1", "weapon_famas", "weapon_galilar", "weapon_mp7", "weapon_ump45", "weapon_mac10",
                 "weapon_mp9", "weapon_p90", "weapon_nova", "weapon_xm1014", "weapon_ssg08"],
     BODY_RANGE: 110,
@@ -61,6 +63,10 @@ const SHOP = {
     ],
 };
 const SHOP_ROWS = 7;
+
+// MAP_DATA_BEGIN (tools/build_data.py writes this from maps/*.json; edit those, not this block)
+const MAP_DATA = {"ttt_minecraft":{"buttons":[{"id":"ttt_auto_2","pos":[-248.0,16.0,88.0],"desc":"Transforms the water in lava, Single use.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_3","pos":[-960.0,96.0,-1176.0],"desc":"Use this to destroy the little nether island. (with the glowstone)","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T1_Button","pos":[768.0,-512.0,512.0],"desc":"Destroys the glass floor.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T2_Button","pos":[592.0,-560.0,456.0],"desc":"Break dungeon glass","once":false,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_4","pos":[528.0,-448.0,640.0],"desc":"Sabotage the tester and make indicator red.","once":true,"wait":0.0,"range":1024.0,"off":false}],"checks":{"T1_Check":{"mins":[-970.0,-288.0,32.0],"maxs":[-954.0,-252.0,112.0],"on":true},"T_Cheat_Check":{"mins":[-928.0,-384.0,32.0],"maxs":[-768.0,-160.0,288.0],"on":true},"Portal_Check":{"mins":[0.0,672.0,416.0],"maxs":[64.0,688.0,512.0],"on":true},"Ttest_check":{"mins":[480.0,-480.0,576.0],"maxs":[520.0,-416.0,672.0],"on":false},"T2_Check":{"mins":[-1984.0,820.0,-228.0],"maxs":[-1920.0,840.0,-164.0],"on":true}},"roles":{"T1_logic":"any","Ttest_logic":"tra","T1_logic2":"tra","T_Cheat_Logic":"tra","Ttest_check_any":"any","Portal_Logic":"tra","Ttest_check_detect":"det","T2_Role":"tra"},"texts":{"Start_Text_1":{"msg":"Welcome to ttt_minecraft. Enjoy you play.","rcv":1},"Start_Text_2":{"msg":"Made by Finniespin. Visit http://conjointgaming.com/","rcv":1},"Cave_Text":{"msg":"Crowbar the iron ore!","rcv":0},"Start_Text_T":{"msg":"The traitor room is now available!","rcv":1},"Ttest_Text":{"msg":"Traitor tester is now available!","rcv":1},"Cave2_Text":{"msg":"Crowbar the iron ore!","rcv":0},"T2_Text_Decoy":{"msg":"You've got a Decoy!","rcv":0},"T2_Text_Radio":{"msg":"You've got a Radio!","rcv":0},"T2_Text_Knife":{"msg":"You've got a Knife!","rcv":0},"T2_Text_Tele":{"msg":"You've got a Teleporter!","rcv":0},"T2_Text_Pistol":{"msg":"You've got a Silenced Pistol!","rcv":0},"T2_Text_Flare":{"msg":"You've got a Flaregun!","rcv":0}},"owners":{"T1_Creeper_Owner":{"damager":"Trap_Creeper_Explosion","name":"the TNT minecart"},"Trap_Lava_Owner":{"damager":"Trap_Lava_Hurt","name":"the lava pool"},"Trap_Nether_Owner":{"damager":"Trap_Nether_Hurt","name":"the island as a trap"},"Trap_Portal_Owner":{"damager":"Trap_Portal_Hurt","name":"False nether portal"},"Ttest_Owner":{"damager":"Ttest_Hurt","name":"the traitor tester"},"Ttest_T1_Owner":{"damager":"Ttest_T1_Hurt","name":"glass floor fall"},"Ttest_T3_Owner":{"damager":"Ttest_Hurt","name":"the sabotaged tester"},"Ttest_T2_Owner":{"damager":"Ttest_T2_Hurt","name":"dungeon trap"}},"credits":{"T2_Credits":1},"wins":1,"settings":1}};
+// MAP_DATA_END
 
 const R_NONE = 0, R_INN = 1, R_TRA = 2, R_DET = 3;
 const ROLE_NAME = ["", "INNOCENT", "TRAITOR", "DETECTIVE"];
@@ -307,6 +313,7 @@ function onRoundStart() {
     }
     if (Instance.IsWarmupPeriod()) { phase = P_WAIT; applyCvars(true); return; }
     phase = P_PREP; phaseEnd = now + CONFIG.PREP_TIME;
+    mapRoundStart();
     applyCvars(true);
     Instance.SetRoundRemainingTime(CONFIG.PREP_TIME + CONFIG.ROUND_TIME + 20);
     for (const c of liveControllers()) { const p = st(c.GetPlayerSlot()); p.loadoutAt = now + 0.5; tint(c.GetPlayerPawn(), false); }
@@ -341,6 +348,7 @@ function startActive() {
             : p.role === R_DET ? "You are the DETECTIVE. Find the traitors. Double-tap F for the shop."
             : "You are INNOCENT. Survive and find the traitors.", 8);
     });
+    mapFire("start");
     phase = P_ACTIVE; activeCap = now + CONFIG.ROUND_TIME; phaseEnd = Math.min(activeCap, now + CONFIG.HASTE_START); waitAnnounced = "";
     applyCvars(false);
     Instance.SetRoundRemainingTime(phaseEnd - now + 20);
@@ -363,6 +371,7 @@ function checkWin() {
 
 function endRound(winner, why) {
     roundEnded = true; phase = P_POST; phaseEnd = now + CONFIG.POST_TIME;
+    mapFire("end");
     for (const p of players.values()) {
         closeShop(p);
         let d = p.scoreDelta + (p.role && side(p.role) === side(winner) && isAlive(p.slot) ? 1 : 0);
@@ -390,7 +399,7 @@ function give(pawn, cls) {
     pawn.GiveNamedItem(cls, false);
 }
 function giveLoadout(pawn) {
-    if (!CONFIG.GIVE_PRIMARY || !pawn || !pawn.IsValid() || !pawn.IsAlive()) return;
+    if (!CONFIG.GIVE_PRIMARY || (CONFIG.GIVE_PRIMARY === "auto" && mapWeapons >= CONFIG.MAP_WEAPONS_ENOUGH) || !pawn || !pawn.IsValid() || !pawn.IsAlive()) return;
     if (pawn.FindWeaponBySlot(CSGearSlot.RIFLE)) return;
     pawn.GiveNamedItem(CONFIG.PRIMARIES[Math.floor(Math.random() * CONFIG.PRIMARIES.length)], false);
 }
@@ -458,7 +467,7 @@ function playerInput(p, c, pawn) {
         else if (down & 32) drop(p, pawn);
     } else if (down & 4) {
         p.useAt = now; p.grabTried = false;
-        if (phase >= P_ACTIVE) searchBody(p, pawn);
+        if (phase >= P_ACTIVE && !searchBody(p, pawn) && p.role === R_TRA && phase === P_ACTIVE) pressButton(p, pawn);
     } else if ((keys & 4) && CONFIG.CARRY && !p.grabTried && now - p.useAt >= CONFIG.CARRY_HOLD_TIME) {
         p.grabTried = true; tryGrab(p, pawn);
     }
@@ -527,9 +536,126 @@ function spawnBody(pawn, model) {
     } catch (err) { log("body spawn failed " + err); return null; }
 }
 
+// ------------------------------------------------------------------ map entities (converted ttt_* entities, see tools/ttt_convert.py)
+const MD = MAP_DATA[Instance.GetMapName()] || MAP_DATA[String(Instance.GetMapName()).replace(/^.*[\\/]/, "")] || null;
+const mapState = { btn: new Map(), chk: new Map(), txtOff: new Set(), owner: new Map() };
+let mapWeapons = 0;
+const WEAPON_CLASSES = ["ak47", "m4a1", "m4a1_silencer", "famas", "galilar", "aug", "sg556", "awp", "ssg08", "scar20", "g3sg1", "mp7", "mp9",
+    "mp5sd", "mac10", "ump45", "p90", "bizon", "nova", "xm1014", "mag7", "sawedoff", "m249", "negev", "glock", "hkp2000", "usp_silencer",
+    "p250", "fiveseven", "tec9", "cz75a", "deagle", "revolver", "elite"];
+function mapFire(ev) { if (MD && MD.settings) Instance.EntFireAtName({ name: "ttt_ms__" + ev, input: "Trigger", delay: 0.05 }); }
+function relay(id, ev, activator) { Instance.EntFireAtName({ name: id + "__" + ev, input: "Trigger", activator }); }
+function mapRoundStart() {
+    mapState.btn.clear(); mapState.chk.clear(); mapState.txtOff.clear(); mapState.owner.clear();
+    if (MD) {
+        for (const b of MD.buttons || []) mapState.btn.set(b.id, { used: false, next: 0, off: !!b.off });
+        for (const id in MD.checks || {}) mapState.chk.set(id, MD.checks[id].on);
+    }
+    mapWeapons = 0;
+    for (const w of WEAPON_CLASSES) for (const e of Instance.FindEntitiesByClass("weapon_" + w)) { try { if (!e.GetOwner()) mapWeapons++; } catch (x) { } }
+    Instance.EntFireAtName({ name: "ttt_ms__prep", input: "Trigger", delay: 0.5 });
+}
+function roleOk(slot, want) {
+    const r = st(slot).role;
+    if (!r || !isAlive(slot)) return false;
+    return want === "any" || (want === "inn" && r === R_INN) || (want === "tra" && r === R_TRA) || (want === "det" && r === R_DET);
+}
+function trapOwner(inflictor) {
+    if (!MD || !MD.owners || !inflictor || !mapState.owner.size) return null;
+    let n = "";
+    try { n = inflictor.GetEntityName(); } catch (e) { return null; }
+    if (!n) return null;
+    for (const [id, slot] of mapState.owner) { const o = MD.owners[id]; if (o && o.damager === n && slot >= 0) return { slot, name: o.name || "a trap" }; }
+    return null;
+}
+function aimButton(pawn) {
+    if (!MD || !MD.buttons || !MD.buttons.length) return null;
+    const eye = pawn.GetEyePosition(), f = forward(pawn.GetEyeAngles());
+    let best = null, bestDot = CONFIG.BUTTON_CONE;
+    for (const b of MD.buttons) {
+        const s = mapState.btn.get(b.id);
+        if (!s || s.off || (b.once && s.used) || now < s.next) continue;
+        const dx = b.pos[0] - eye.x, dy = b.pos[1] - eye.y, dz = b.pos[2] - eye.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (d > b.range || d < 1) continue;
+        const dot = (dx * f.x + dy * f.y + dz * f.z) / d;
+        if (dot > bestDot) { bestDot = dot; best = b; }
+    }
+    return best;
+}
+function pressButton(p, pawn) {
+    const b = aimButton(pawn);
+    if (!b) return;
+    const s = mapState.btn.get(b.id);
+    s.used = true; s.next = now + Math.max(0.5, b.wait > 0 ? b.wait : 0.5);
+    relay(b.id, "pressed", pawn);
+    tell(p.slot, "Traitor trap: " + (b.desc || "activated"), 4);
+}
+function buttonHint(p, pawn) {
+    const b = aimButton(pawn);
+    if (b) { p.msg = "[E] traitor trap: " + (b.desc || "use"); p.msgUntil = now + 0.5; }
+}
+function mapInput(name, fn) { Instance.OnScriptInput(name, (inp) => { try { fn(inp); } catch (e) { log(name + ": " + e); } }); }
+if (MD) {
+    for (const b of MD.buttons || []) {
+        mapInput("ttt:btnoff:" + b.id, () => { const s = mapState.btn.get(b.id); if (s) s.off = true; });
+        mapInput("ttt:btnon:" + b.id, () => { const s = mapState.btn.get(b.id); if (s) s.off = false; });
+        mapInput("ttt:btntog:" + b.id, () => { const s = mapState.btn.get(b.id); if (s) s.off = !s.off; });
+    }
+    for (const id in MD.checks || {}) {
+        const c = MD.checks[id];
+        mapInput("ttt:chkon:" + id, () => mapState.chk.set(id, true));
+        mapInput("ttt:chkoff:" + id, () => mapState.chk.set(id, false));
+        mapInput("ttt:chk:" + id, ({ activator }) => {
+            if (!mapState.chk.get(id)) return;
+            relay(id, "found", activator);
+            let n = 0;
+            for (const q of players.values()) {
+                if (q.role !== R_TRA) continue;
+                const t = pawnOf(q.slot);
+                if (!t || !t.IsAlive()) continue;
+                const o = t.GetAbsOrigin(), z = o.z + 36;
+                if (o.x >= c.mins[0] - 16 && o.x <= c.maxs[0] + 16 && o.y >= c.mins[1] - 16 && o.y <= c.maxs[1] + 16 && z >= c.mins[2] - 36 && z <= c.maxs[2] + 36) n++;
+            }
+            if (n) log("tester " + id + ": " + n + " traitor(s) inside");
+        });
+    }
+    for (const id in MD.roles || {}) {
+        const want = MD.roles[id];
+        mapInput("ttt:role:" + id, ({ activator }) => relay(id, roleOk(slotOf(toPawn(activator)), want) ? "pass" : "fail", activator));
+    }
+    for (const id in MD.texts || {}) {
+        const t = MD.texts[id];
+        mapInput("ttt:txtoff:" + id, () => mapState.txtOff.add(id));
+        mapInput("ttt:txt:" + id, ({ activator }) => {
+            if (mapState.txtOff.has(id) || !t.msg) return;
+            if (t.rcv === 0) { const s = slotOf(toPawn(activator)); if (s >= 0) tell(s, t.msg, 5); return; }
+            for (const c of liveControllers()) {
+                const s = c.GetPlayerSlot(), r = st(s).role;
+                if (t.rcv === 1 || (t.rcv === 2 && r === R_DET) || (t.rcv === 3 && r === R_TRA) || (t.rcv === 4 && (r === R_INN || r === R_DET))) tell(s, t.msg, 5);
+            }
+        });
+    }
+    for (const id in MD.owners || {}) {
+        mapInput("ttt:own:" + id, ({ activator }) => mapState.owner.set(id, slotOf(toPawn(activator))));
+        mapInput("ttt:unown:" + id, () => mapState.owner.delete(id));
+    }
+    for (const id in MD.credits || {}) {
+        const n = MD.credits[id];
+        mapInput("ttt:cred:" + id, ({ activator }) => {
+            const s = slotOf(toPawn(activator)), q = s >= 0 ? st(s) : null;
+            if (q && q.credits >= n) { q.credits -= n; relay(id, "ok", activator); } else relay(id, "fail", activator);
+        });
+    }
+    if (MD.wins) {
+        mapInput("ttt:win:t", () => { if (phase === P_ACTIVE) endRound(R_TRA, "The map gave the traitors the win"); });
+        mapInput("ttt:win:i", () => { if (phase === P_ACTIVE) endRound(R_INN, "The map gave the innocents the win"); });
+        mapInput("ttt:win:d", () => { if (phase === P_ACTIVE) endRound(R_INN, "Draw"); });
+    }
+}
+
 // ------------------------------------------------------------------ bodies
 function searchBody(p, pawn) {
-    if (!bodies.length) return;
+    if (!bodies.length) return false;
     const eye = pawn.GetEyePosition(), a = pawn.GetEyeAngles();
     const py = a.pitch * Math.PI / 180, yw = a.yaw * Math.PI / 180;
     const f = { x: Math.cos(py) * Math.cos(yw), y: Math.cos(py) * Math.sin(yw), z: -Math.sin(py) };
@@ -542,7 +668,7 @@ function searchBody(p, pawn) {
         const dot = d < 40 ? 1 : (dx * f.x + dy * f.y + dz * f.z) / d;
         if (dot > bestDot) { bestDot = dot; best = b; }
     }
-    if (!best) return;
+    if (!best) return false;
     if (!best.found) {
         best.found = true;
         announce(p.name + " found the body of " + best.name + ". They were " + (best.role === R_INN ? "an " : "a ") + ROLE_NAME[best.role] + ".");
@@ -556,6 +682,7 @@ function searchBody(p, pawn) {
         } else txt += " No DNA trail.";
         tell(p.slot, txt, 8);
     }
+    return true;
 }
 
 function weaponLabel(hit) {
@@ -643,7 +770,11 @@ Instance.OnPlayerDamage((ev) => {
         if (phase === P_ACTIVE && a.role && p.role && side(a.role) === side(p.role)) {
             a.karma = Math.max(0, a.karma - ev.damage * CONFIG.KARMA_HURT); a.cleanRound = false;
         }
-    } else if (!p.lastHit || now - p.lastHit.t > 15) p.lastHit = { slot: -1, t: now, types: ev.damageTypes, weapon: null };
+    } else {
+        const own = trapOwner(ev.inflictor);
+        if (own) p.lastHit = { slot: own.slot, t: now, types: ev.damageTypes, weapon: own.name };
+        else if (!p.lastHit || now - p.lastHit.t > 15) p.lastHit = { slot: -1, t: now, types: ev.damageTypes, weapon: null };
+    }
     if (p.shopOpen) closeShop(p);
     if (p.pendingKill) {
         if (ev.player.GetHealth() <= 1) killQueue.push(vs);
@@ -746,6 +877,7 @@ function think() {
                     if (p.nativeAt && now >= p.nativeAt) { p.nativeAt = 0; if (!c.IsBot()) nativeHud(pawn, false); }
                     if (p.loadoutAt && now >= p.loadoutAt) { p.loadoutAt = 0; if (phase === P_PREP) giveLoadout(pawn); }
                     playerInput(p, c, pawn);
+                    if (p.role === R_TRA && phase === P_ACTIVE && !p.shopOpen && MD && (tick + p.slot) % 8 === 0) buttonHint(p, pawn);
                 } else if (p.shopOpen || p.frozen) closeShop(p);
                 if (h && (tick + p.slot) % 8 === 0) drawHud(p, c);
             } catch (e) { log("player " + c.GetPlayerSlot() + ": " + e); }

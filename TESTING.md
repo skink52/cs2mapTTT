@@ -19,3 +19,11 @@ Setup: 3+ humans (or 2 + `MIN_PLAYERS 2` for a look), `bot_quota 0`, map with bo
 
 Unverified mechanics to watch: velocity on `prop_ragdoll` (moves the whole body?), `SetModelScale(0.02)` hiding the client ragdoll, `PREVENT_DEATH` + world kill (does the victim ever stay on 1 hp?), `SetMoveType(NONE)` while shopping,
 `FireWinCondition` reasons, voice cvars, `SHOP_CURSOR` clicks, custom HUD vs CS2's killfeed layer (`HUD_IN_KILLFEED`), whether an earlier hitter gets an assist on a world kill.
+
+## Converted TTT maps (ttt_minecraft)
+
+13. Traitor buttons: aiming at one as traitor shows `[E] traitor trap: ...`; E fires the trap; single-use ones go away.
+14. Traitor tester / role doors (T1 room, traitor tester room): innocents fail, traitors pass, as the map intends.
+15. Map texts: welcome text in prep, "traitor room available" at round start, cave hints to the activator only.
+16. A trap kill: body info names the trap; detective DNA points at the traitor who pressed it.
+17. ttt_cg_skyscraper_2017 / ttt_minecraft: map weapons on the floor, no free primary.
