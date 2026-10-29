@@ -116,6 +116,7 @@ class PState {
         this.duckUntil = 0;
         this.useAt = -1;
         this.grabTried = false;
+        this.bodyPend = false;
         this.pendingAttacker = undefined;
         this.deathModel = "";
         this.scaled = false;
@@ -579,11 +580,13 @@ function playerInput(p, c, pawn) {
         if (down & 4) { drop(p, null); p.grabTried = true; }
         else if (down & 32) drop(p, pawn);
     } else if (down & 4) {
-        p.useAt = now; p.grabTried = false;
-        if (phase >= P_ACTIVE && !searchBody(p, pawn) && p.role === R_TRA && phase === P_ACTIVE) pressButton(p, pawn);
+        p.useAt = now; p.grabTried = false; p.bodyPend = false;
+        if (phase >= P_ACTIVE && CONFIG.CARRY && CONFIG.CARRY_BODIES && aimedBody(pawn)) p.bodyPend = true;   // tap = search, hold = carry
+        else if (phase >= P_ACTIVE && !searchBody(p, pawn, pawn.IsInputPressed(CSInputs.WALK)) && p.role === R_TRA && phase === P_ACTIVE) pressButton(p, pawn);
     } else if ((keys & 4) && CONFIG.CARRY && !p.grabTried && now - p.useAt >= CONFIG.CARRY_HOLD_TIME) {
-        p.grabTried = true; tryGrab(p, pawn);
+        p.grabTried = true; p.bodyPend = false; tryGrab(p, pawn);
     }
+    if ((up & 4) && p.bodyPend) { p.bodyPend = false; if (!p.grabTried) searchBody(p, pawn, pawn.IsInputPressed(CSInputs.WALK)); }
     if (p.hold) carry(p, pawn);
 }
 
@@ -862,8 +865,8 @@ if (MD) {
 }
 
 // ------------------------------------------------------------------ bodies
-function searchBody(p, pawn) {
-    if (!bodies.length) return false;
+function aimedBody(pawn) {
+    if (!bodies.length) return null;
     const eye = pawn.GetEyePosition(), a = pawn.GetEyeAngles();
     const py = a.pitch * Math.PI / 180, yw = a.yaw * Math.PI / 180;
     const f = { x: Math.cos(py) * Math.cos(yw), y: Math.cos(py) * Math.sin(yw), z: -Math.sin(py) };
@@ -876,8 +879,14 @@ function searchBody(p, pawn) {
         const dot = d < 40 ? 1 : (dx * f.x + dy * f.y + dz * f.z) / d;
         if (dot > bestDot) { bestDot = dot; best = b; }
     }
+    return best;
+}
+function searchBody(p, pawn, covert) {
+    const best = aimedBody(pawn);
     if (!best) return false;
-    if (!best.found) {
+    const what = best.name + " was " + (best.role === R_INN ? "an " : "a ") + ROLE_NAME[best.role] + ".";
+    if (covert && !best.found) tell(p.slot, "Covert search (not announced): " + what, 6);
+    else if (!best.found) {
         best.found = true;
         const bq = players.get(best.slot);
         if (bq && bq.role === best.role) bq.confirmed = true;
@@ -1060,7 +1069,7 @@ Instance.OnPlayerChat(({ player, text }) => {
         if (chatLog.length > 20) chatLog.shift();
     } catch (e) { }
     const t = text.trim().toLowerCase();
-    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "E on a body = identify. Hold E on a prop = carry (E drop, R throw). Hold F = shop (traitor/detective): W/S pick, E buy, F close. Tab = scoreboard." + (CONFIG.HIDE_NATIVE_HUD ? " Tap F = next weapon. Ctrl+F = chat for " + CONFIG.CHAT_HUD_TIME + "s." : ""), 12);
+    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "Tap E on a body = identify (Shift+E = covert, not announced). Hold E on a prop or body = carry (E drop, R throw). Hold F = shop (traitor/detective): W/S pick, E buy, F close. Tab = scoreboard." + (CONFIG.HIDE_NATIVE_HUD ? " Tap F = next weapon. Ctrl+F = chat for " + CONFIG.CHAT_HUD_TIME + "s." : ""), 12);
 });
 
 function think() {

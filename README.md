@@ -12,6 +12,7 @@ One cs_script (`ttt.js`) plus an optional HUD. No server plugins. Works on any m
    - `custom_hud_layout`: targetname `ttt_hud`, layout `panorama/layout/custom_game/ttt_hud.vxml` (optional but strongly recommended: roles, shop, messages)
    - `point_template` `ttt_body_tpl` → `prop_ragdoll` `ttt_body_src` (CT body, `agents/models/ctm_sas/ctm_sas.vmdl`) and `ttt_body_tpl_t` → `ttt_body_src_t` (T body, `agents/models/tm_phoenix/tm_phoenix.vmdl`) (optional: carryable server-side bodies; keys in `tools/ttt_patch.json`). Not `characters/models/…`: those are one-bone placeholders and show as a box.
    - or run `python3 patch_vmap.py <map.vmap> <out.vmap> "" tools/ttt_patch.json` from [cs2mapping/create](https://github.com/skink52/cs2mapping/tree/main/create) (re-runnable).
+   - HUD backgrounds (optional): `python3 tools/hud_theme.py <banner.png>` cuts kf/sb/top/shop.png from a server banner into `addon/panorama/images/custom_game/ttt/` (git-ignored; flat colours without them).
 3. Build the map. HUD: the cs2port `run_build.bat` compiles the xml and css; otherwise `resourcecompiler -f -i` them.
 
 A map's `info_map_parameters` is used to end rounds if present; otherwise the round clock is used.
@@ -43,7 +44,7 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Roles | 25% traitors (min 1), detectives from 8 players (1 per 8). Detectives are public (blue tint, Zeus). |
 | Win | All traitors dead → innocents. All others dead → traitors. Clock out → innocents. |
 | Clock | Haste: 3:30 + 20 s per innocent death, capped at 6:00. |
-| Bodies | E on a body: everyone learns name + role. Detective: weapon, time, and a 45 s DNA trail to the killer. |
+| Bodies | Tap E on a body: everyone learns name + role (Shift+E: covert, only you see it and it isn't confirmed; hold E carries the body without identifying it). Detective: weapon, time, and a 45 s DNA trail to the killer. |
 | Shop | Traitor/detective: hold F. W/S select, E buy, F/jump close. Credits from deaths. |
 | CS2 HUD | Kept (`HIDE_NATIVE_HUD` off): normal weapon switching and chat. The TTT panel sits over the killfeed, and every death reads as a world death. `HIDE_NATIVE_HUD: true` hides CS2's HUD while alive in a live round (tap F = next weapon, Ctrl+F = chat for 15 s, chat mirrored on the TTT HUD). |
 | Scoreboard | Tab shows the TTT scoreboard drawn over CS2's (`SCOREBOARD`): Terrorists / Missing in action / Confirmed dead / Spectators, karma. Living players see the dead as alive until the body is found; traitors see traitors in red, detectives show blue to all; the dead see everything. `COVER_TOPBAR` covers CS2's top bar (alive avatars, clock) with the TTT clock. The TTT panel over the killfeed is opaque. |

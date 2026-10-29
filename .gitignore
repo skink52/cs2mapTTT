@@ -2,3 +2,4 @@
 *.vpk
 *_c
 node_modules/
+addon/panorama/images/custom_game/ttt/
