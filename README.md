@@ -27,7 +27,7 @@ A map's `info_map_parameters` is used to end rounds if present; otherwise the ro
 | Bodies | E on a body: everyone learns name + role. Detective: weapon, time, and a 45 s DNA trail to the killer. |
 | Shop | Traitor/detective: double-tap F (inspect). W/S select, E buy, F/jump close. Credits from deaths. |
 | Karma | Damaging your own side costs karma; low karma scales your damage down (min 40%). |
-| Killers hidden | Lethal player hits are turned into world kills: killfeed shows the death, never the killer. TTT score via scoreboard score. |
+| Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
 | Carry | Hold E on a physics prop or body to pick it up; E drops, R throws. Can't stand on what you hold. |
 | Bodies | With the body template, every death spawns a server-side ragdoll of the player's model (the client ragdoll is shrunk away), so bodies can be dragged and hidden. |
 | Chat | `!ttt` shows controls. |
@@ -39,7 +39,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - The killfeed itself can't be removed by a map. On a CounterStrikeSharp server a tiny plugin can: a `HookMode.Pre` `EventPlayerDeath` handler setting
   `info.DontBroadcast = true` stops clients getting the death event (no killfeed); the server still sees it, and the scoreboard comes from networked
   player stats, so it keeps updating (expected, unverified in CS2). With that plugin, set `HIDE_KILLER: false` so kills credit the real killer.
-- Without the plugin: `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable from script, and may stay set on the player's client after leaving), off by default. `KILLFEED_MASK` draws a black box over the feed area as a test; CS2's own HUD normally draws over custom HUDs.
+- Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (unverified that CS2 draws it above the feed; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.
 - Bots shoot everyone (`mp_teammates_are_enemies 1`); use `bot_quota 0`.
 - Scoreboard shows who is dead. Dead/alive voice: `sv_deadtalk 0`, `sv_talk_enemy_dead 0` (cvar names unverified in CS2).

@@ -15,7 +15,7 @@ const CONFIG = {
     DETECTIVE_RATIO: 0.125,
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
-    KILLFEED_MASK: false,
+    HUD_IN_KILLFEED: true,
     GIVE_PRIMARY: true,
     PRIMARIES: ["weapon_ak47", "weapon_m4a1", "weapon_famas", "weapon_galilar", "weapon_mp7", "weapon_ump45", "weapon_mac10",
                 "weapon_mp9", "weapon_p90", "weapon_nova", "weapon_xm1014", "weapon_ssg08"],
@@ -98,6 +98,7 @@ class PState {
         this.pendingAttacker = undefined;
         this.deathModel = "";
         this.scaled = false;
+        this.scoreDelta = 0;
         this.radarText = "";
     }
 }
@@ -213,7 +214,7 @@ function drawHud(p, c) {
     const pawn = c.GetPlayerPawn();
     const alive = !!pawn && pawn.IsValid() && pawn.IsAlive();
     hudCls(p, "Ttt", "stOn", true);
-    hudCls(p, "Mask", "stOn", CONFIG.KILLFEED_MASK);
+    hudCls(p, "Ttt", "stKF", CONFIG.HUD_IN_KILLFEED);
     let roleCls = "stSpec", role = "SPECTATING", sub = "", info = "", track = "";
     const left = phaseEnd - now;
     if (phase === P_WAIT) { roleCls = "stWait"; role = Instance.IsWarmupPeriod() ? "WARMUP" : "WAITING"; sub = "TTT starts next round"; }
@@ -223,11 +224,11 @@ function drawHud(p, c) {
         sub = phase === P_POST ? "Round over" : (p.role === R_TRA || !alive ? "Time " + mmss(left) : "Haste " + mmss(left));
     }
     if (phase >= P_ACTIVE) {
-        if (alive && p.role === R_TRA) info = "Traitors: " + traitorNames(p.slot) + "   Credits " + p.credits;
+        if (alive && p.role === R_TRA) info = "Traitors: " + traitorNames(p.slot) + "\nCredits " + p.credits;
         else if (alive && p.role === R_DET) info = "Credits " + p.credits + "   E on a body: inspect / DNA";
         else if (!alive) info = "Traitors: " + traitorNames(-1);
     }
-    if (alive) info += (info ? "   " : "") + "Karma " + Math.round(p.karma);
+    if (alive) info += (info ? (p.role === R_TRA ? "   " : "\n") : "") + "Karma " + Math.round(p.karma);
     if (alive && p.trackSlot >= 0 && now < p.trackUntil) {
         const t = pawnOf(p.trackSlot);
         if (t && t.IsAlive()) track = "DNA: " + dirText(pawn.GetAbsOrigin(), pawn.GetEyeAngles().yaw, t.GetAbsOrigin()) + " (" + Math.ceil(p.trackUntil - now) + "s)";
@@ -236,10 +237,11 @@ function drawHud(p, c) {
     if (alive && now < p.radarUntil && tick % 32 === 0) p.radarText = radarText(p, pawn);
     if (alive && now < p.radarUntil) track += (track ? "\n" : "") + (p.radarText || "");
     for (const k of ROLE_CLS.concat(["stSpec", "stWait", "stPrep"])) if (k) hudCls(p, "Ttt", k, k === roleCls);
-    hudVar(p, "Role", "role", role);
-    hudVar(p, "Sub", "sub", sub);
-    hudVar(p, "Info", "info", info);
-    hudVar(p, "Track", "track", track);
+    const K = CONFIG.HUD_IN_KILLFEED ? "K" : "";
+    hudVar(p, K + "Role", "role", role);
+    hudVar(p, K + "Sub", "sub", sub);
+    hudVar(p, K + "Info", "info", info);
+    hudVar(p, K + "Track", "track", track);
     hudVar(p, "MsgA", "msga", now < globalMsgUntil ? globalMsg : "");
     hudVar(p, "MsgB", "msgb", now < p.msgUntil ? p.msg : "");
     const items = SHOP[p.role] || [];
@@ -270,7 +272,7 @@ function radarText(p, pawn) {
         list.push({ d: (o.x - me.x) ** 2 + (o.y - me.y) ** 2 + (o.z - me.z) ** 2, o });
     }
     list.sort((a, b) => a.d - b.d);
-    return "Radar: " + (list.slice(0, 3).map(e => dirText(me, yaw, e.o)).join(" | ") || "nobody") + " (" + Math.ceil(p.radarUntil - now) + "s)";
+    return "Radar " + Math.ceil(p.radarUntil - now) + "s: " + (list.slice(0, 3).map(e => dirText(me, yaw, e.o)).map((t, i) => (i === 2 ? "\n" : i ? ", " : "") + t).join("") || "nobody");
 }
 function tell(slot, text, secs = 6) {
     const p = st(slot); p.msg = text; p.msgUntil = now + secs;
@@ -283,7 +285,7 @@ function onRoundStart() {
     roundEnded = false; endFallbackAt = 0; bodies = []; heldBy.clear(); killQueue = []; deathsSinceCredit = 0; globalMsgUntil = 0;
     for (const p of players.values()) {
         if (p.role && p.cleanRound) p.karma = Math.min(CONFIG.KARMA_MAX, p.karma + CONFIG.KARMA_CLEAN_ROUND);
-        p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
+        p.scoreDelta = 0; p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
         p.lastHit = null; p.pendingKill = false; closeShop(p); p.msgUntil = 0; p.hold = null;
     }
     if (Instance.IsWarmupPeriod()) { phase = P_WAIT; applyCvars(true); return; }
@@ -346,7 +348,9 @@ function endRound(winner, why) {
     roundEnded = true; phase = P_POST; phaseEnd = now + CONFIG.POST_TIME;
     for (const p of players.values()) {
         closeShop(p);
-        if (p.role && side(p.role) === side(winner) && isAlive(p.slot)) { const c = Instance.GetPlayerController(p.slot); if (c) c.AddScore(1); }
+        let d = p.scoreDelta + (p.role && side(p.role) === side(winner) && isAlive(p.slot) ? 1 : 0);
+        p.scoreDelta = 0;
+        if (d) { const c = Instance.GetPlayerController(p.slot); if (c) c.AddScore(d); }
     }
     announce((winner === R_TRA ? "TRAITORS WIN. " : "INNOCENTS WIN. ") + why + ". Traitors: " + traitorNames(-1), CONFIG.POST_TIME + 2);
     const reason = winner === R_TRA ? CSRoundEndReason.TERRORISTS_WIN : CSRoundEndReason.CTS_WIN;
@@ -565,8 +569,8 @@ function onDeath(pawn, attacker, weapon) {
     const k = ks >= 0 && ks !== vs ? players.get(ks) : undefined;
     if (k && k.role) {
         const kc = Instance.GetPlayerController(ks);
-        if (side(k.role) === side(p.role)) { k.karma = Math.max(0, k.karma - CONFIG.KARMA_KILL); k.cleanRound = false; if (CONFIG.HIDE_KILLER && kc) kc.AddScore(-1); }
-        else { k.karma = Math.min(CONFIG.KARMA_MAX, k.karma + CONFIG.KARMA_GOOD_KILL); if (CONFIG.HIDE_KILLER && kc) kc.AddScore(1); }
+        if (side(k.role) === side(p.role)) { k.karma = Math.max(0, k.karma - CONFIG.KARMA_KILL); k.cleanRound = false; if (CONFIG.HIDE_KILLER) k.scoreDelta--; else if (kc) kc.AddScore(-1); }
+        else { k.karma = Math.min(CONFIG.KARMA_MAX, k.karma + CONFIG.KARMA_GOOD_KILL); if (CONFIG.HIDE_KILLER) k.scoreDelta++; else if (kc) kc.AddScore(1); }
     }
     if (p.role === R_TRA) {
         for (const q of players.values()) if (q.role === R_DET && isAlive(q.slot)) q.credits++;
@@ -648,7 +652,15 @@ Instance.OnPlayerKill(({ player, attacker, weapon }) => onDeath(player, attacker
 
 // ------------------------------------------------------------------ lifecycle
 Instance.OnRoundStart(() => { now = Instance.GetGameTime(); onRoundStart(); ensureThink(); });
-Instance.OnRoundEnd(() => { if (phase !== P_WAIT) { phase = P_POST; roundEnded = true; endFallbackAt = 0; } for (const p of players.values()) closeShop(p); });
+function flushScores() {
+    for (const p of players.values()) {
+        if (!p.scoreDelta) continue;
+        const c = Instance.GetPlayerController(p.slot);
+        if (c) c.AddScore(p.scoreDelta);
+        p.scoreDelta = 0;
+    }
+}
+Instance.OnRoundEnd(() => { flushScores(); if (phase !== P_WAIT) { phase = P_POST; roundEnded = true; endFallbackAt = 0; } for (const p of players.values()) closeShop(p); });
 Instance.OnPlayerConnect(({ player }) => { const s = player.GetPlayerSlot(); players.delete(s); st(s).name = clean(player.GetPlayerName()); });
 Instance.OnPlayerActivate(({ player }) => {
     const s = player.GetPlayerSlot(), p = st(s); p.name = clean(player.GetPlayerName()); resetHud(s);

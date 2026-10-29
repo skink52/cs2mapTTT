@@ -3,8 +3,22 @@
 .Ttt.stOn { opacity: 1; }
 .HUD_SCOREBOARD_VISIBLE .Ttt, .HUD_ENDOFMATCH_VISIBLE .Ttt { visibility: collapse; }
 
-.Mask { width: 440px; height: 130px; horizontal-align: right; margin-top: 66px; background-color: #000000; opacity: 0; }
-.Mask.stOn { opacity: 1; }
+.KfBox { width: 480px; height: 236px; horizontal-align: right; margin-top: 64px; background-color: #0c0c0cf2; opacity: 0; }
+.Ttt.stKF .KfBox { opacity: 1; }
+.Ttt.stKF .RoleBox, .Ttt.stKF .InfoText, .Ttt.stKF .TrackText { opacity: 0; }
+.KfBar { width: 8px; height: 236px; background-color: #505050; }
+.Ttt.stInn .KfBar { background-color: #2f9f3f; }
+.Ttt.stTra .KfBar { background-color: #c02020; }
+.Ttt.stDet .KfBar { background-color: #2a5ad0; }
+.Ttt.stPrep .KfBar { background-color: #a07a10; }
+.Ttt.stInn .KRoleText { color: #5fdf6f; }
+.Ttt.stTra .KRoleText { color: #ff4a4a; }
+.Ttt.stDet .KRoleText { color: #6f9fff; }
+.Ttt.stPrep .KRoleText { color: #f0c040; }
+.KRoleText { width: 300px; height: 40px; margin-left: 20px; margin-top: 6px; font-size: 32px; font-weight: bold; color: #e0e0e0; letter-spacing: 1px; }
+.KSubText { width: 200px; height: 30px; horizontal-align: right; margin-right: 12px; margin-top: 12px; text-align: right; font-size: 22px; color: #ffffff; }
+.KInfoText { width: 452px; height: 76px; margin-left: 20px; margin-top: 50px; font-size: 19px; color: #f0f0f0; }
+.KTrackText { width: 452px; height: 100px; margin-left: 20px; margin-top: 130px; font-size: 19px; color: #9fd0ff; }
 
 .RoleBox { width: 340px; height: 74px; margin-left: 24px; margin-top: 300px; background-color: #303030cc; border-radius: 4px; }
 .Ttt.stInn .RoleBox { background-color: #2f8f3fdd; }
@@ -19,10 +33,10 @@
 .InfoText { width: 560px; height: 52px; margin-left: 24px; margin-top: 380px; font-size: 19px; color: #ffffff; text-shadow: 1px 1px 2px #000000; }
 .TrackText { width: 560px; height: 80px; margin-left: 24px; margin-top: 434px; font-size: 20px; color: #9fd0ff; text-shadow: 1px 1px 2px #000000; }
 
-.MsgA { width: 1100px; height: 34px; horizontal-align: center; margin-top: 200px; text-align: center; font-size: 26px; color: #ffffff; text-shadow: 2px 2px 3px #000000; }
-.MsgB { width: 1100px; height: 30px; horizontal-align: center; margin-top: 238px; text-align: center; font-size: 22px; color: #ffe08a; text-shadow: 2px 2px 3px #000000; }
+.MsgA { width: 760px; height: 34px; horizontal-align: center; margin-top: 680px; text-align: center; font-size: 26px; color: #ffffff; text-shadow: 2px 2px 3px #000000; }
+.MsgB { width: 760px; height: 30px; horizontal-align: center; margin-top: 718px; text-align: center; font-size: 22px; color: #ffe08a; text-shadow: 2px 2px 3px #000000; }
 
-.ShopBox { width: 420px; height: 336px; horizontal-align: right; margin-right: 24px; margin-top: 260px; background-color: #101010e6; border: 2px solid #b02020; border-radius: 4px; opacity: 0; }
+.ShopBox { width: 420px; height: 336px; horizontal-align: right; margin-right: 24px; margin-top: 316px; background-color: #101010e6; border: 2px solid #b02020; border-radius: 4px; opacity: 0; }
 .ShopBox.stOpen { opacity: 1; }
 .Ttt.stDet .ShopBox { border: 2px solid #2050c0; }
 .ShopTitle { width: 400px; height: 32px; margin-left: 10px; margin-top: 6px; font-size: 22px; font-weight: bold; color: #ffffff; }

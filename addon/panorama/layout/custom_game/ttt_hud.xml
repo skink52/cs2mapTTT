@@ -4,7 +4,13 @@
 	</styles>
 	<Panel class="TttHost" hittest="false">
 		<Panel id="Ttt" class="Ttt" hittest="false">
-			<Panel id="Mask" class="Mask" hittest="false" />
+			<Panel class="KfBox" hittest="false">
+				<Panel class="KfBar" hittest="false" />
+				<Label id="KRole" class="KRoleText" hittest="false" text="{s:role}" />
+				<Label id="KSub" class="KSubText" hittest="false" text="{s:sub}" />
+				<Label id="KInfo" class="KInfoText" hittest="false" text="{s:info}" />
+				<Label id="KTrack" class="KTrackText" hittest="false" text="{s:track}" />
+			</Panel>
 			<Panel class="RoleBox" hittest="false">
 				<Label id="Role" class="RoleText" hittest="false" text="{s:role}" />
 				<Label id="Sub" class="SubText" hittest="false" text="{s:sub}" />
