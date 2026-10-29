@@ -14,6 +14,7 @@
 				<Label id="Ar" class="ArText" hittest="false" text="{s:ar}" />
 			</Panel>
 			<Label id="Ammo" class="AmmoText" hittest="false" text="{s:ammo}" />
+			<Label id="Chat" class="ChatText" hittest="false" text="{s:chat}" />
 			<Panel class="KfBox" hittest="false">
 				<Panel class="KfBar" hittest="false" />
 				<Label id="KRole" class="KRoleText" hittest="false" text="{s:role}" />

@@ -45,7 +45,7 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Clock | Haste: 3:30 + 20 s per innocent death, capped at 6:00. |
 | Bodies | E on a body: everyone learns name + role. Detective: weapon, time, and a 45 s DNA trail to the killer. |
 | Shop | Traitor/detective: hold F. W/S select, E buy, F/jump close. Credits from deaths. |
-| Weapons | CS2's HUD is hidden (`HIDE_NATIVE_HUD`), which also turns off its weapon switching: tap F for the next weapon (rifle, pistol, knife, Zeus, grenades, healthshot); the list shows on the HUD. |
+| Weapons / chat | CS2's HUD is hidden only while you're alive in a live round (`HIDE_NATIVE_HUD`). That also turns off its weapon switching and chat box, so: tap F for the next weapon; Ctrl+F brings CS2's HUD back for 15 s to type in chat (Y/U); recent chat lines show on the TTT HUD (living players only see living players' messages). Prep, round end and the dead get CS2's normal HUD. |
 | Karma | Damaging your own side costs karma; low karma scales your damage down (min 40%). |
 | Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
 | Carry | Hold E on a physics prop to pick it up; E drops, R throws. Can't stand on what you hold. Bodies: `CARRY_BODIES` (off, see Limits). |

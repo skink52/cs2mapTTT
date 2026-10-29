@@ -17,7 +17,10 @@ const CONFIG = {
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
     HIDE_NATIVE_HUD: true,        // no CS2 HUD (killfeed gone); SetHUDVisibility also blocks weapon switching, so tap F cycles weapons
-    SHOP_HOLD: 0.45,              // hold F this long for the shop (traitor / detective)
+    SHOP_HOLD: 0.45,
+    HIDE_ONLY_ALIVE_ACTIVE: true, // CS2's HUD (chat box, weapon wheel) comes back in prep, after the round and for the dead
+    CHAT_HUD_TIME: 15,            // Ctrl+F: CS2's HUD back for this long, to type in chat
+    CHAT_LINES: 5, CHAT_KEEP: 14, // chat shown on the TTT HUD while CS2's is hidden              // hold F this long for the shop (traitor / detective)
     GIVE_PRIMARY: "auto",
     MAP_WEAPONS_ENOUGH: 10,
     BUTTON_CONE: 0.97,
@@ -115,6 +118,8 @@ class PState {
         this.scaled = false;
         this.scoreDelta = 0;
         this.nativeAt = 0;
+        this.nativeHidden = null;
+        this.chatHudUntil = 0;
         this.radarText = "";
     }
 }
@@ -231,8 +236,9 @@ function drawHud(p, c) {
     const alive = !!pawn && pawn.IsValid() && pawn.IsAlive();
     hudCls(p, "Ttt", "stOn", true);
     hudCls(p, "Ttt", "stKF", CONFIG.HUD_IN_KILLFEED);
-    hudCls(p, "Ttt", "stNoNat", CONFIG.HIDE_NATIVE_HUD && alive);
-    if (CONFIG.HIDE_NATIVE_HUD && alive) {
+    hudCls(p, "Ttt", "stNoNat", p.nativeHidden === true && alive);
+    hudVar(p, "Chat", "chat", p.nativeHidden === true ? chatText(p) : "");
+    if (p.nativeHidden === true && alive) {
         hudVar(p, "Hp", "hp", String(Math.max(0, Math.round(pawn.GetHealth()))));
         hudVar(p, "Ar", "ar", pawn.GetArmor() > 0 ? String(Math.round(pawn.GetArmor())) : "");
         let ammo = "";
@@ -395,6 +401,21 @@ function endRound(winner, why) {
 }
 
 // ------------------------------------------------------------------ players
+function wantHidden(p) {
+    if (!CONFIG.HIDE_NATIVE_HUD) return false;
+    if (now < p.chatHudUntil) return false;
+    return !CONFIG.HIDE_ONLY_ALIVE_ACTIVE || phase === P_ACTIVE;
+}
+function syncNativeHud(p, pawn) {
+    const h = wantHidden(p);
+    if (p.nativeHidden === h) return;
+    p.nativeHidden = h; nativeHud(pawn, !h); p.hud.delete("Ttt#stNoNat");
+}
+const chatLog = [];
+function chatText(p) {
+    const lines = chatLog.filter(m => now - m.t < CONFIG.CHAT_KEEP && (m.alive || !isAlive(p.slot) || phase !== P_ACTIVE));
+    return lines.slice(-CONFIG.CHAT_LINES).map(m => m.name + ": " + m.text).join("\n");
+}
 function nativeHud(pawn, visible) {
     try { if (pawn && pawn.IsValid()) Instance.EntFireAtTarget({ target: pawn, input: "SetHUDVisibility", value: visible }); } catch (e) { }
 }
@@ -479,12 +500,19 @@ function playerInput(p, c, pawn) {
         return;
     }
     // F: tap = next weapon (CS2's own switching is off with its HUD), hold = shop
-    if (down & 8) { p.fDownAt = now; p.fUsed = false; }
+    if (down & 8) {
+        p.fDownAt = now; p.fUsed = false;
+        if (CONFIG.HIDE_NATIVE_HUD && pawn.IsInputPressed(CSInputs.DUCK)) {
+            p.fUsed = true; p.chatHudUntil = now < p.chatHudUntil ? 0 : now + CONFIG.CHAT_HUD_TIME;
+            if (p.chatHudUntil) tell(p.slot, "Chat open for " + CONFIG.CHAT_HUD_TIME + "s: press Y / U to type", 3);
+            syncNativeHud(p, pawn);
+        }
+    }
     if ((keys & 8) && !p.fUsed && p.fDownAt >= 0 && now - p.fDownAt >= CONFIG.SHOP_HOLD && SHOP[p.role] && phase === P_ACTIVE) {
         p.fUsed = true; openShop(p, pawn); return;
     }
     if (up & 8) {
-        if (!p.fUsed && p.fDownAt >= 0 && now - p.fDownAt < CONFIG.SHOP_HOLD && CONFIG.F_CYCLE && CONFIG.HIDE_NATIVE_HUD) cycleWeapon(p, pawn);
+        if (!p.fUsed && p.fDownAt >= 0 && now - p.fDownAt < CONFIG.SHOP_HOLD && CONFIG.F_CYCLE && p.nativeHidden === true) cycleWeapon(p, pawn);
         p.fDownAt = -1; p.fUsed = false;
     }
     if (p.hold) {
@@ -946,7 +974,7 @@ Instance.OnPlayerReset(({ player }) => {
     }
     if (phase === P_ACTIVE && p.role === R_DET) tint(player, true);
     if (phase === P_PREP || phase === P_WAIT) p.loadoutAt = now + 0.3;
-    if (CONFIG.HIDE_NATIVE_HUD) { nativeHud(player, false); p.nativeAt = now + 0.5; }
+    p.nativeHidden = null; p.nativeAt = now + 0.5; p.chatHudUntil = 0;
     resetHud(s);
 });
 Instance.OnPlayerTeamChanged(({ player }) => { const s = slotOf(player); if (s >= 0) resetHud(s); });
@@ -958,8 +986,13 @@ Instance.OnCustomHudClicked(({ player, buttonId }) => {
 });
 Instance.OnPlayerChat(({ player, text }) => {
     if (!player) return;
+    try {
+        const s = player.GetPlayerSlot();
+        chatLog.push({ t: now, name: clean(player.GetPlayerName()).slice(0, 16), text: String(text).replace(/[\r\n]/g, " ").slice(0, 90), alive: isAlive(s) });
+        if (chatLog.length > 20) chatLog.shift();
+    } catch (e) { }
     const t = text.trim().toLowerCase();
-    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "TTT: E on a body = identify / hold E = carry. Tap F = next weapon. Hold F = shop (traitor/detective): W/S pick, E buy, F close.", 10);
+    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "TTT: E on a body = identify / hold E = carry. Tap F = next weapon. Ctrl+F = chat for 15s. Hold F = shop (traitor/detective): W/S pick, E buy, F close.", 10);
 });
 
 function think() {
@@ -993,13 +1026,16 @@ function think() {
                 const pawn = c.GetPlayerPawn();
                 const alive = !!pawn && pawn.IsValid() && pawn.IsAlive();
                 if (alive) {
-                    if (p.nativeAt && now >= p.nativeAt) { p.nativeAt = 0; if (!c.IsBot()) nativeHud(pawn, false); }
+                    if (!c.IsBot() && (tick + p.slot) % 8 === 0 && now >= p.nativeAt) syncNativeHud(p, pawn);
                     if (p.loadoutAt && now >= p.loadoutAt) { p.loadoutAt = 0; if (phase === P_PREP) giveLoadout(pawn); }
                     playerInput(p, c, pawn);
                     if (p.role === R_TRA && phase === P_ACTIVE && !p.shopOpen && MD && (tick + p.slot) % 8 === 0) buttonHint(p, pawn);
                     if (p.duckUntil > now && (tick + p.slot) % 32 === 0 && !pawn.IsDucked()) { p.msg = "Crouch (hold Ctrl) to crawl through"; p.msgUntil = now + 0.6; }
                     if (p.alpha < 255 && (tick + p.slot) % 16 === 0) { try { const w = pawn.GetActiveWeapon(); if (w) w.SetColor({ r: 255, g: 255, b: 255, a: p.alpha }); } catch (e) { } }
-                } else if (p.shopOpen || p.frozen) closeShop(p);
+                } else {
+                    if (p.shopOpen || p.frozen) closeShop(p);
+                    if (p.nativeHidden === true && pawn && pawn.IsValid()) { p.nativeHidden = false; nativeHud(pawn, true); }
+                }
                 if (h && (tick + p.slot) % 8 === 0) drawHud(p, c);
             } catch (e) { log("player " + c.GetPlayerSlot() + ": " + e); }
         }
