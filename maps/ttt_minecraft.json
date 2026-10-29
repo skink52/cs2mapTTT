@@ -18,7 +18,7 @@
    "pos": [
     -960.0,
     96.0,
-    -1176.0
+    -5272.0
    ],
    "desc": "Use this to destroy the little nether island. (with the glowstone)",
    "once": true,
@@ -376,12 +376,12 @@
    "mins": [
     -1248.0,
     -640.0,
-    -1248.0
+    -5344.0
    ],
    "maxs": [
     -1216.0,
     -636.0,
-    -1216.0
+    -5312.0
    ],
    "half": [
     8.0,
