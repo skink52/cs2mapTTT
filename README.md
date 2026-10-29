@@ -65,6 +65,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (verified 30 Oct: the opaque panel hides the feed completely; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
 - Server crash (29 Oct, from the minidump): `SetModel` on a freshly spawned `prop_ragdoll`, then `Teleport`, crashed in the ragdoll's Teleport (empty bone list). The template model was the one-bone placeholder `characters/models/ctm_sas`. Bodies now use the real agents and are never `SetModel`'d; `CARRY_BODIES` is on again (velocity only); `BODY_SET_MODEL` stays off.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.
+- A client with `cl_draw_only_deathnotices 1` sees the killfeed instead of the TTT HUD: killers stay hidden (world deaths), but victims' names show. Only a server plugin (`DontBroadcast`, above) removes that.
 - The Esc menu shows CS2's scoreboard (dead players marked); the custom HUD isn't drawn over menus.
 - Chat from dead players carries CS2's `*DEAD*` tag (set by the engine). `sv_deadtalk 0` with `sv_alltalk 0` should keep dead text from the living (unverified in CS2).
 - Bots shoot everyone (`mp_teammates_are_enemies 1`); use `bot_quota 0`.
