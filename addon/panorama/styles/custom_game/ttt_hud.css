@@ -47,3 +47,15 @@
 .RowText { width: 390px; height: 30px; margin-left: 6px; margin-top: 3px; font-size: 20px; color: #ffffff; }
 .ShopRow.stOff .RowText { color: #808080; }
 .ShopHelp { width: 400px; height: 24px; margin-left: 10px; margin-top: 304px; font-size: 16px; color: #c0c0c0; }
+
+.Cross, .Vitals, .AmmoText { opacity: 0; }
+.Ttt.stNoNat .Cross, .Ttt.stNoNat .Vitals, .Ttt.stNoNat .AmmoText { opacity: 1; }
+.Ttt.stNoNat .Cross.stScope { opacity: 0; }
+.Cross { width: 24px; height: 24px; horizontal-align: center; margin-top: 528px; }
+.CrossH { width: 24px; height: 2px; margin-top: 11px; background-color: #50ff50; }
+.CrossV { width: 2px; height: 24px; margin-left: 11px; background-color: #50ff50; }
+.Vitals { width: 300px; height: 56px; margin-left: 24px; margin-top: 1004px; background-color: #0c0c0ccc; }
+.HpTag { width: 40px; height: 30px; margin-left: 12px; margin-top: 16px; font-size: 20px; color: #c0c0c0; }
+.HpText { width: 90px; height: 44px; margin-left: 52px; margin-top: 4px; font-size: 38px; font-weight: bold; color: #ffffff; }
+.ArText { width: 120px; height: 30px; margin-left: 160px; margin-top: 14px; font-size: 24px; color: #9fc0ff; }
+.AmmoText { width: 300px; height: 48px; horizontal-align: right; margin-right: 24px; margin-top: 1008px; text-align: right; font-size: 36px; font-weight: bold; color: #ffffff; text-shadow: 2px 2px 3px #000000; }

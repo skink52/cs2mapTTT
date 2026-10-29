@@ -16,6 +16,7 @@ const CONFIG = {
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
+    HIDE_NATIVE_HUD: true,
     GIVE_PRIMARY: true,
     PRIMARIES: ["weapon_ak47", "weapon_m4a1", "weapon_famas", "weapon_galilar", "weapon_mp7", "weapon_ump45", "weapon_mac10",
                 "weapon_mp9", "weapon_p90", "weapon_nova", "weapon_xm1014", "weapon_ssg08"],
@@ -99,6 +100,7 @@ class PState {
         this.deathModel = "";
         this.scaled = false;
         this.scoreDelta = 0;
+        this.nativeAt = 0;
         this.radarText = "";
     }
 }
@@ -215,6 +217,21 @@ function drawHud(p, c) {
     const alive = !!pawn && pawn.IsValid() && pawn.IsAlive();
     hudCls(p, "Ttt", "stOn", true);
     hudCls(p, "Ttt", "stKF", CONFIG.HUD_IN_KILLFEED);
+    hudCls(p, "Ttt", "stNoNat", CONFIG.HIDE_NATIVE_HUD && alive);
+    if (CONFIG.HIDE_NATIVE_HUD && alive) {
+        hudVar(p, "Hp", "hp", String(Math.max(0, Math.round(pawn.GetHealth()))));
+        hudVar(p, "Ar", "ar", pawn.GetArmor() > 0 ? String(Math.round(pawn.GetArmor())) : "");
+        let ammo = "";
+        const w = pawn.GetActiveWeapon();
+        if (w) {
+            let t = -1;
+            try { t = w.GetData().GetType(); } catch (e) { }
+            ammo = t === CSWeaponType.KNIFE || t === CSWeaponType.GRENADE || t === CSWeaponType.STACKABLEITEM || t === CSWeaponType.EQUIPMENT || t < 0
+                ? weaponName(w) : w.GetClipAmmo() + " / " + w.GetReserveAmmo();
+        }
+        hudVar(p, "Ammo", "ammo", ammo);
+        hudCls(p, "Cross", "stScope", pawn.IsScoped());
+    }
     let roleCls = "stSpec", role = "SPECTATING", sub = "", info = "", track = "";
     const left = phaseEnd - now;
     if (phase === P_WAIT) { roleCls = "stWait"; role = Instance.IsWarmupPeriod() ? "WARMUP" : "WAITING"; sub = "TTT starts next round"; }
@@ -361,6 +378,9 @@ function endRound(winner, why) {
 }
 
 // ------------------------------------------------------------------ players
+function nativeHud(pawn, visible) {
+    try { if (pawn && pawn.IsValid()) Instance.EntFireAtTarget({ target: pawn, input: "SetHUDVisibility", value: visible }); } catch (e) { }
+}
 function tint(pawn, det) {
     try { if (pawn && pawn.IsValid()) pawn.SetColor(det ? CONFIG.DETECTIVE_TINT : { r: 255, g: 255, b: 255, a: 255 }); } catch (e) { }
 }
@@ -680,6 +700,7 @@ Instance.OnPlayerReset(({ player }) => {
     }
     if (phase === P_ACTIVE && p.role === R_DET) tint(player, true);
     if (phase === P_PREP || phase === P_WAIT) p.loadoutAt = now + 0.3;
+    if (CONFIG.HIDE_NATIVE_HUD) { nativeHud(player, false); p.nativeAt = now + 0.5; }
     resetHud(s);
 });
 Instance.OnPlayerTeamChanged(({ player }) => { const s = slotOf(player); if (s >= 0) resetHud(s); });
@@ -722,6 +743,7 @@ function think() {
                 const pawn = c.GetPlayerPawn();
                 const alive = !!pawn && pawn.IsValid() && pawn.IsAlive();
                 if (alive) {
+                    if (p.nativeAt && now >= p.nativeAt) { p.nativeAt = 0; if (!c.IsBot()) nativeHud(pawn, false); }
                     if (p.loadoutAt && now >= p.loadoutAt) { p.loadoutAt = 0; if (phase === P_PREP) giveLoadout(pawn); }
                     playerInput(p, c, pawn);
                 } else if (p.shopOpen || p.frozen) closeShop(p);

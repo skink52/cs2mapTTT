@@ -4,6 +4,16 @@
 	</styles>
 	<Panel class="TttHost" hittest="false">
 		<Panel id="Ttt" class="Ttt" hittest="false">
+			<Panel id="Cross" class="Cross" hittest="false">
+				<Panel class="CrossH" hittest="false" />
+				<Panel class="CrossV" hittest="false" />
+			</Panel>
+			<Panel class="Vitals" hittest="false">
+				<Label class="HpTag" hittest="false" text="HP" />
+				<Label id="Hp" class="HpText" hittest="false" text="{s:hp}" />
+				<Label id="Ar" class="ArText" hittest="false" text="{s:ar}" />
+			</Panel>
+			<Label id="Ammo" class="AmmoText" hittest="false" text="{s:ammo}" />
 			<Panel class="KfBox" hittest="false">
 				<Panel class="KfBar" hittest="false" />
 				<Label id="KRole" class="KRoleText" hittest="false" text="{s:role}" />

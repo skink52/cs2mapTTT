@@ -39,6 +39,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - The killfeed itself can't be removed by a map. On a CounterStrikeSharp server a tiny plugin can: a `HookMode.Pre` `EventPlayerDeath` handler setting
   `info.DontBroadcast = true` stops clients getting the death event (no killfeed); the server still sees it, and the scoreboard comes from networked
   player stats, so it keeps updating (expected, unverified in CS2). With that plugin, set `HIDE_KILLER: false` so kills credit the real killer.
+- `HIDE_NATIVE_HUD` (on): the pawn input `SetHUDVisibility false` hides CS2's whole HUD (killfeed included, as the Dogfight addon does); the TTT HUD then draws its own health, armor, ammo and crosshair. Set false to keep CS2's HUD.
 - Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (unverified that CS2 draws it above the feed; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.
 - Bots shoot everyone (`mp_teammates_are_enemies 1`); use `bot_quota 0`.
