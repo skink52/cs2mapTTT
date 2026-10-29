@@ -17,12 +17,12 @@ const CONFIG = {
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
     SCOREBOARD: true,             // Tab shows the TTT scoreboard over CS2's: the dead stay listed as alive until their body is found
-    COVER_TOPBAR: true,           // cover CS2's top bar (alive avatars, clock) during the round with the TTT clock
+    COVER_TOPBAR: true,           // cover CS2's top bar (alive avatars, clock) with the TTT clock
     HIDE_NATIVE_HUD: false,       // true: no CS2 HUD at all (SetHUDVisibility; also blocks weapon switching and chat, so tap F cycles weapons, Ctrl+F opens chat)
-    SHOP_HOLD: 0.45,
+    SHOP_HOLD: 0.45,              // hold F this long for the shop (traitor / detective)
     HIDE_ONLY_ALIVE_ACTIVE: true, // CS2's HUD (chat box, weapon wheel) comes back in prep, after the round and for the dead
     CHAT_HUD_TIME: 15,            // Ctrl+F: CS2's HUD back for this long, to type in chat
-    CHAT_LINES: 5, CHAT_KEEP: 14, // chat shown on the TTT HUD while CS2's is hidden              // hold F this long for the shop (traitor / detective)
+    CHAT_LINES: 5, CHAT_KEEP: 14, // chat shown on the TTT HUD while CS2's is hidden
     GIVE_PRIMARY: "auto",
     MAP_WEAPONS_ENOUGH: 10,
     BUTTON_CONE: 0.97,
@@ -75,6 +75,9 @@ const SHOP = {
     ],
 };
 const SHOP_ROWS = 7;
+const RULES = "Rules: no random killing, only kill with a reason (you saw it, they shot you, KOS with proof). KOS calls need a reason. "
+    + "The dead don't help the living (no ghosting). Don't use the Esc scoreboard. Traitors don't kill traitors; nobody kills the detective. "
+    + "Shooting your own side costs karma and damage.";
 
 // MAP_DATA_BEGIN (tools/build_data.py writes this from maps/*.json; edit those, not this block)
 const MAP_DATA = {"ttt_cg_skyscraper_2017":{"buttons":[],"checks":{},"roles":{},"texts":{},"owners":{},"credits":{},"wins":0,"settings":0,"ptouch":{},"alphas":[0,35,70,140,170,225],"duck":0},"ttt_minecraft":{"buttons":[{"id":"ttt_auto_2","pos":[-248.0,16.0,88.0],"desc":"Transforms the water in lava, Single use.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_3","pos":[-960.0,96.0,-1176.0],"desc":"Use this to destroy the little nether island. (with the glowstone)","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T1_Button","pos":[768.0,-512.0,512.0],"desc":"Destroys the glass floor.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T2_Button","pos":[592.0,-560.0,456.0],"desc":"Break dungeon glass","once":false,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_4","pos":[528.0,-448.0,640.0],"desc":"Sabotage the tester and make indicator red.","once":true,"wait":0.0,"range":1024.0,"off":false}],"checks":{"T1_Check":{"mins":[-970.0,-288.0,32.0],"maxs":[-954.0,-252.0,112.0],"on":true},"T_Cheat_Check":{"mins":[-928.0,-384.0,32.0],"maxs":[-768.0,-160.0,288.0],"on":true},"Portal_Check":{"mins":[0.0,672.0,416.0],"maxs":[64.0,688.0,512.0],"on":true},"Ttest_check":{"mins":[480.0,-480.0,576.0],"maxs":[520.0,-416.0,672.0],"on":false},"T2_Check":{"mins":[-1984.0,820.0,-228.0],"maxs":[-1920.0,840.0,-164.0],"on":true}},"roles":{"T1_logic":"any","Ttest_logic":"tra","T1_logic2":"tra","T_Cheat_Logic":"tra","Ttest_check_any":"any","Portal_Logic":"tra","Ttest_check_detect":"det","T2_Role":"tra"},"texts":{"Start_Text_1":{"msg":"Welcome to ttt_minecraft. Enjoy you play.","rcv":1},"Start_Text_2":{"msg":"Made by Finniespin. Visit http://conjointgaming.com/","rcv":1},"Cave_Text":{"msg":"Crowbar the iron ore!","rcv":0},"Start_Text_T":{"msg":"The traitor room is now available!","rcv":1},"Ttest_Text":{"msg":"Traitor tester is now available!","rcv":1},"Cave2_Text":{"msg":"Crowbar the iron ore!","rcv":0},"T2_Text_Decoy":{"msg":"You've got a Decoy!","rcv":0},"T2_Text_Radio":{"msg":"You've got a Radio!","rcv":0},"T2_Text_Knife":{"msg":"You've got a Knife!","rcv":0},"T2_Text_Tele":{"msg":"You've got a Teleporter!","rcv":0},"T2_Text_Pistol":{"msg":"You've got a Silenced Pistol!","rcv":0},"T2_Text_Flare":{"msg":"You've got a Flaregun!","rcv":0}},"owners":{"T1_Creeper_Owner":{"damager":"Trap_Creeper_Explosion","name":"the TNT minecart"},"Trap_Lava_Owner":{"damager":"Trap_Lava_Hurt","name":"the lava pool"},"Trap_Nether_Owner":{"damager":"Trap_Nether_Hurt","name":"the island as a trap"},"Trap_Portal_Owner":{"damager":"Trap_Portal_Hurt","name":"False nether portal"},"Ttest_Owner":{"damager":"Ttest_Hurt","name":"the traitor tester"},"Ttest_T1_Owner":{"damager":"Ttest_T1_Hurt","name":"glass floor fall"},"Ttest_T3_Owner":{"damager":"Ttest_Hurt","name":"the sabotaged tester"},"Ttest_T2_Owner":{"damager":"Ttest_T2_Hurt","name":"dungeon trap"}},"credits":{"T2_Credits":1},"wins":1,"settings":1,"ptouch":{"ttt_pt_1":{"ent":"minecart","mins":[-1796.0,480.0,128.0],"maxs":[-1792.0,544.0,224.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_2":{"ent":"minecart","mins":[-2016.0,544.0,960.0],"maxs":[-1952.0,640.0,992.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"Ttest_CraftTrigger":{"ent":"GoldBlock","mins":[576.0,-448.0,608.0],"maxs":[608.0,-416.0,612.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,8.0]},"ttt_pt_3":{"ent":"minecart","mins":[480.0,-640.0,608.0],"maxs":[544.0,-624.0,672.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_4":{"ent":"minecart","mins":[608.0,-640.0,608.0],"maxs":[672.0,-624.0,672.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_5":{"ent":"DiaBlock","mins":[-1824.0,576.0,736.0],"maxs":[-1792.0,608.0,740.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,0.0]},"Pigman_Furnace_Trigger":{"ent":"Clay","mins":[-1248.0,-640.0,-1248.0],"maxs":[-1216.0,-636.0,-1216.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,0.0]},"ttt_pt_6":{"ent":"minecart","mins":[16.0,632.0,496.0],"maxs":[48.0,664.0,576.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]}},"alphas":[],"duck":1}};
@@ -271,7 +274,7 @@ function drawHud(p, c) {
     }
     if (phase >= P_ACTIVE) {
         if (alive && p.role === R_TRA) info = "Traitors: " + traitorNames(p.slot) + "\nCredits " + p.credits;
-        else if (alive && p.role === R_DET) info = "Credits " + p.credits + "   E on a body: inspect / DNA";
+        else if (alive && p.role === R_DET) info = "Credits " + p.credits + "   Tap E on a body: inspect / DNA";
         else if (!alive) info = "Traitors: " + traitorNames(-1);
     }
     if (alive) info += (info ? (p.role === R_TRA ? "   " : "\n") : "") + "Karma " + Math.round(p.karmaBase);
@@ -374,11 +377,20 @@ function radarText(p, pawn) {
     list.sort((a, b) => a.d - b.d);
     return "Radar " + Math.ceil(p.radarUntil - now) + "s: " + (list.slice(0, 3).map(e => dirText(me, yaw, e.o)).map((t, i) => (i === 2 ? "\n" : i ? ", " : "") + t).join("") || "nobody");
 }
+function wrap(text, n = 78) {
+    if (text.length <= n) return text;
+    const out = []; let line = "";
+    for (const w of text.split(" ")) {
+        if (line && line.length + 1 + w.length > n) { out.push(line); line = w; } else line = line ? line + " " + w : w;
+    }
+    if (line) out.push(line);
+    return out.join("\n");
+}
 function tell(slot, text, secs = 6) {
-    const p = st(slot); p.msg = text; p.msgUntil = now + secs;
+    const p = st(slot); p.msg = wrap(text); p.msgUntil = now + secs;
     if (!findHud()) log("to " + p.name + ": " + text);
 }
-function announce(text, secs = 7) { globalMsg = text; globalMsgUntil = now + secs; say(text); }
+function announce(text, secs = 7) { globalMsg = wrap(text, 70); globalMsgUntil = now + secs; say(text); }
 
 // ------------------------------------------------------------------ rounds
 function onRoundStart() {
@@ -564,7 +576,7 @@ function playerInput(p, c, pawn) {
         if ((down & 8) || (down & 16) || now - p.shopAt > CONFIG.SHOP_TIMEOUT) closeShop(p);
         return;
     }
-    // F: tap = next weapon (CS2's own switching is off with its HUD), hold = shop
+    // F: hold = shop; tap = next weapon only with HIDE_NATIVE_HUD (CS2's own switching is off then); Ctrl+F = chat window
     if (down & 8) {
         p.fDownAt = now; p.fUsed = false;
         if (CONFIG.HIDE_NATIVE_HUD && pawn.IsInputPressed(CSInputs.DUCK)) {
@@ -704,7 +716,7 @@ function spawnBody(pawn, model) {
     const tpl = bodyTemplate(team);
     if (!tpl || bodies.length >= CONFIG.BODY_MAX) return null;
     try {
-        const o = pawn.GetAbsOrigin(), v = pawn.GetAbsVelocity();
+        const o = pawn.GetAbsOrigin();
         const ents = tpl.ForceSpawn({ x: o.x, y: o.y, z: o.z + 8 }, { pitch: 0, yaw: pawn.GetAbsAngles().yaw, roll: 0 });
         const e = ents && ents[0];
         if (!e) return null;
@@ -1079,7 +1091,8 @@ Instance.OnPlayerChat(({ player, text }) => {
         if (chatLog.length > 20) chatLog.shift();
     } catch (e) { }
     const t = text.trim().toLowerCase();
-    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "Tap E on a body = identify (Shift+E = covert, not announced). Hold E on a prop or body = carry (E drop, R throw). Hold F = shop (traitor/detective): W/S pick, E buy, F close. Tab = scoreboard." + (CONFIG.HIDE_NATIVE_HUD ? " Tap F = next weapon. Ctrl+F = chat for " + CONFIG.CHAT_HUD_TIME + "s." : ""), 12);
+    if (t === "!rules" || t === "/rules") tell(player.GetPlayerSlot(), RULES, 15);
+    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "Tap E on a body = identify (Shift+E = covert, not announced). Hold E on a prop or body = carry (E drop, R throw). Hold F = shop (traitor/detective): W/S pick, E buy, F close. Tab = scoreboard. Traitors: aim at a trap and press E. !rules = rules." + (CONFIG.HIDE_NATIVE_HUD ? " Tap F = next weapon. Ctrl+F = chat for " + CONFIG.CHAT_HUD_TIME + "s." : ""), 12);
 });
 
 function think() {

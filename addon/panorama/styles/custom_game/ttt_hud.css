@@ -33,8 +33,8 @@
 .InfoText { width: 560px; height: 52px; margin-left: 24px; margin-top: 380px; font-size: 19px; color: #ffffff; text-shadow: 1px 1px 2px #000000; }
 .TrackText { width: 560px; height: 80px; margin-left: 24px; margin-top: 434px; font-size: 20px; color: #9fd0ff; text-shadow: 1px 1px 2px #000000; }
 
-.MsgA { width: 760px; height: 32px; horizontal-align: center; margin-top: 680px; text-align: center; font-size: 23px; color: #f2fff4; text-shadow: 0px 0px 6px #000000; }
-.MsgB { width: 760px; height: 90px; horizontal-align: center; margin-top: 714px; text-align: center; font-size: 19px; color: #b8f5c8; text-shadow: 0px 0px 6px #000000; }
+.MsgA { width: 820px; height: 62px; horizontal-align: center; margin-top: 676px; text-align: center; font-size: 23px; color: #f2fff4; text-shadow: 0px 0px 6px #000000; }
+.MsgB { width: 820px; height: 124px; horizontal-align: center; margin-top: 742px; text-align: center; font-size: 19px; color: #b8f5c8; text-shadow: 0px 0px 6px #000000; }
 
 .ShopBox { width: 420px; height: 336px; horizontal-align: right; margin-right: 24px; margin-top: 380px; background-color: #0b120d; background-image: url("file://{images}/custom_game/ttt/shop.png"); background-size: 100% 100%; border: 2px solid #3ddc84; border-radius: 12px; opacity: 0; }
 .ShopBox.stOpen { opacity: 1; }

@@ -44,21 +44,20 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Roles | 25% traitors (min 1), detectives from 8 players (1 per 8). Detectives are public (blue tint, Zeus). |
 | Win | All traitors dead → innocents. All others dead → traitors. Clock out → innocents. |
 | Clock | Haste: 3:30 + 20 s per innocent death, capped at 6:00. |
-| Bodies | Tap E on a body: everyone learns name + role (Shift+E: covert, only you see it and it isn't confirmed; hold E carries the body without identifying it). Detective: weapon, time, and a 45 s DNA trail to the killer. |
+| Bodies | Tap E on a body: everyone learns name + role (Shift+E: covert, only you see it and it isn't confirmed; hold E carries the body without identifying it). Detective: weapon, time, and a 45 s DNA trail to the killer. With the body templates every death leaves a server-side ragdoll (T or CT agent by the victim's team; the client ragdoll is shrunk away). |
 | Shop | Traitor/detective: hold F. W/S select, E buy, F/jump close. Credits from deaths. |
 | CS2 HUD | Kept (`HIDE_NATIVE_HUD` off): normal weapon switching and chat. The TTT panel sits over the killfeed, and every death reads as a world death. `HIDE_NATIVE_HUD: true` hides CS2's HUD while alive in a live round (tap F = next weapon, Ctrl+F = chat for 15 s, chat mirrored on the TTT HUD). |
 | Scoreboard | Tab shows the TTT scoreboard drawn over CS2's (`SCOREBOARD`): Terrorists / Missing in action / Confirmed dead / Spectators, karma. Living players see the dead as alive until the body is found; traitors see traitors in red, detectives show blue to all; the dead see everything. `COVER_TOPBAR` covers CS2's top bar (alive avatars, clock) with the TTT clock. The TTT panel over the killfeed is opaque. |
 | Karma | Like GMod: hurting (0.5 per HP) or killing (60) your own side costs karma; innocents/detectives gain 15 for killing a traitor; each round +5, +30 more for a clean round; max 1000. Low karma scales your damage down (min 40%). Changes made during a round apply at the next round start (scoreboard, HUD and damage), so they don't reveal who you hit. Karma lasts for the map (a map script can't keep data across maps) and survives reconnects by player name. |
-| Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
+| Killers hidden | During the round every lethal player hit becomes a world kill: nobody is credited, and the TTT panel covers the feed anyway. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
 | Carry | Hold E on a physics prop or a body to pick it up; E drops, R throws. Can't stand on what you hold. |
-| Bodies | With the body templates, every death spawns a server-side ragdoll (T or CT agent by the victim's team; the client ragdoll is shrunk away). |
-| Chat | `!ttt` shows controls. |
+| Chat | `!ttt` shows controls, `!rules` the rules (`RULES` in `ttt.js`). |
 
 Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, `APPLY_CVARS` off to keep a server's own config).
 
 ## Limits (CS2)
 
-- The killfeed itself can't be removed by a map. On a CounterStrikeSharp server a tiny plugin can: a `HookMode.Pre` `EventPlayerDeath` handler setting
+- A map can't stop CS2 sending kill notices; the TTT panel covers the feed instead (verified). On a CounterStrikeSharp server a tiny plugin removes them: a `HookMode.Pre` `EventPlayerDeath` handler setting
   `info.DontBroadcast = true` stops clients getting the death event (no killfeed); the server still sees it, and the scoreboard comes from networked
   player stats, so it keeps updating (expected, unverified in CS2). With that plugin, set `HIDE_KILLER: false` so kills credit the real killer.
 - `HIDE_NATIVE_HUD` (off by default): the pawn input `SetHUDVisibility false` hides CS2's whole HUD (killfeed included); the TTT HUD draws health, armor, ammo and a crosshair. It also turns off CS2's weapon switching (number keys / wheel, found in game), so `F_CYCLE` makes a tap of F switch weapons from the script (`SwitchToWeapon`).
@@ -69,7 +68,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - The Esc menu shows CS2's scoreboard (dead players marked); the custom HUD isn't drawn over menus.
 - Chat from dead players carries CS2's `*DEAD*` tag (set by the engine). `sv_deadtalk 0` with `sv_alltalk 0` should keep dead text from the living (unverified in CS2).
 - Bots shoot everyone (`mp_teammates_are_enemies 1`); use `bot_quota 0`.
-- Scoreboard shows who is dead. Dead/alive voice: `sv_deadtalk 0`, `sv_talk_enemy_dead 0` (cvar names unverified in CS2).
+- Dead/alive voice: `sv_deadtalk 0`, `sv_talk_enemy_dead 0` (set by `APPLY_CVARS`; unverified in CS2).
 - Plugins that force teams, respawn, spawn protection or TK punishment break it.
 
 ## Test
