@@ -246,12 +246,21 @@ for k2 in ('ptouch', 'alphas', 'duck'):
 # ---------------------------------------------------------------- the TTT entities themselves (only those missing)
 have = {(cls_of(c), P(c).get('targetname') or '') for c in vmapgen.entities(d)}
 classes = {k for k, _ in have}
+BODY_T, BODY_CT = 'agents/models/tm_phoenix/tm_phoenix.vmdl', 'agents/models/ctm_sas/ctm_sas.vmdl'   # real agents; characters/models/* are one-bone placeholders
 add = [('point_script', 'ttt_script', dict(cs_script='maps/scripts/ttt.vjs')),
        ('custom_hud_layout', 'ttt_hud', dict(layout='panorama/layout/custom_game/ttt_hud.vxml', observable='1')),
        ('point_template', 'ttt_body_tpl', dict(Template01='ttt_body_src', spawnflags='0', asynchronous='0', timeoutInterval='0',
                                                spawnGroupType='INSERT_INTO_POINT_TEMPLATE_SPAWN_GROUP',
                                                clientOnlyEntityBehavior='CREATE_FOR_CURRENTLY_CONNECTED_CLIENTS_ONLY')),
-       ('prop_ragdoll', 'ttt_body_src', dict(model='characters/models/ctm_sas/ctm_sas.vmdl', solid='6'))]
+       ('prop_ragdoll', 'ttt_body_src', dict(model=BODY_CT, solid='6')),
+       ('point_template', 'ttt_body_tpl_t', dict(Template01='ttt_body_src_t', spawnflags='0', asynchronous='0', timeoutInterval='0',
+                                                 spawnGroupType='INSERT_INTO_POINT_TEMPLATE_SPAWN_GROUP',
+                                                 clientOnlyEntityBehavior='CREATE_FOR_CURRENTLY_CONNECTED_CLIENTS_ONLY')),
+       ('prop_ragdoll', 'ttt_body_src_t', dict(model=BODY_T, solid='6'))]
+for c in vmapgen.entities(d):          # older conversions used the one-bone placeholder agent (shows as a box)
+    if cls_of(c) == 'prop_ragdoll' and P(c).get('targetname') in ('ttt_body_src', 'ttt_body_src_t'):
+        want = BODY_T if P(c).get('targetname') == 'ttt_body_src_t' else BODY_CT
+        if P(c).get('model') != want: set_key(c, 'model', want)
 if 'info_map_parameters' not in classes:
     add.append(('info_map_parameters', 'ttt_params', dict(buying='3')))
 spawn = next((c.get('origin') for c in ents if cls_of(c) == 'info_player_terrorist'), (0, 0, 0))
@@ -277,6 +286,8 @@ jf = os.path.join(A.data, A.map + '.json')
 if os.path.exists(jf) and not ttt:          # a re-run on a converted map: keep what the first run learnt from the ttt_* entities
     old = json.load(open(jf))
     for k in ('buttons', 'checks', 'roles', 'texts', 'owners', 'credits', 'wins', 'settings'): data[k] = old.get(k, data[k])
+    for k in ('ptouch', 'alphas', 'duck'):           # rules whose source outputs the first run already rewrote
+        if not data.get(k): data[k] = old.get(k, data[k])
 if any(data[k] for k in data):
     json.dump(data, open(jf, 'w'), indent=1)
 left = [cls_of(c) for c in vmapgen.entities(dmx.DMX.load(A.out)) if cls_of(c).startswith('ttt_') or cls_of(c).startswith('weapon_ttt')]

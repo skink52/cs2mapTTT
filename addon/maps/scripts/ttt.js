@@ -46,10 +46,11 @@ const CONFIG = {
     CARRY: true,
     CARRY_CLASSES: ["prop_physics", "prop_physics_multiplayer", "prop_physics_override", "func_physbox"],
     CARRY_RANGE: 110, CARRY_AIM_RADIUS: 28, CARRY_HOLD_TIME: 0.35, CARRY_DIST: 70, CARRY_GAIN: 12, CARRY_MAX_SPEED: 900, CARRY_BREAK_DIST: 200, CARRY_THROW: 550,
-    BODY_TEMPLATE: "ttt_body_tpl",
+    BODY_TEMPLATE: "ttt_body_tpl",       // CT body (agents/models/ctm_sas); also the fallback
+    BODY_TEMPLATE_T: "ttt_body_tpl_t",   // T body (agents/models/tm_phoenix)
     BODY_MAX: 48,
     BODY_SET_MODEL: false,        // crash risk, see spawnBody
-    CARRY_BODIES: false,          // carrying a prop_ragdoll Teleports it every tick: off until it's proven safe in game
+    CARRY_BODIES: true,           // the 29 Oct crash was a one-bone placeholder model + SetModel; set false if carrying a body ever crashes
     HIDE_CLIENT_RAGDOLL: true,
 };
 
@@ -151,9 +152,9 @@ let waitAnnounced = "";
 let waitAnnouncedAt = -100;
 
 const st = (slot) => { let p = players.get(slot); if (!p) { p = new PState(slot); players.set(slot, p); } return p; };
-const clean = (s) => String(s).replace(/[;"\\\n\r]/g, "").slice(0, 40);
+const clean = (s, n = 40) => String(s).replace(/[;"\\\n\r]/g, "").slice(0, n);
 const mmss = (s) => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-const say = (t) => { if (CONFIG.CHAT_ANNOUNCE) Instance.ServerCommand("say " + clean(t).slice(0, 120)); };
+const say = (t) => { if (CONFIG.CHAT_ANNOUNCE) Instance.ServerCommand("say " + clean(t, 120)); };
 const log = (t) => Instance.Msg("[ttt] " + t);
 
 function toPawn(ent) {
@@ -275,7 +276,7 @@ function drawHud(p, c) {
         if (t && t.IsAlive()) track = "DNA: " + dirText(pawn.GetAbsOrigin(), pawn.GetEyeAngles().yaw, t.GetAbsOrigin()) + " (" + Math.ceil(p.trackUntil - now) + "s)";
         else p.trackUntil = 0;
     }
-    if (alive && now < p.radarUntil && tick % 32 === 0) p.radarText = radarText(p, pawn);
+    if (alive && now < p.radarUntil && (!p.radarText || (tick + p.slot) % 32 === 0)) p.radarText = radarText(p, pawn);
     if (alive && now < p.radarUntil) track += (track ? "\n" : "") + (p.radarText || "");
     for (const k of ROLE_CLS.concat(["stSpec", "stWait", "stPrep"])) if (k) hudCls(p, "Ttt", k, k === roleCls);
     const K = CONFIG.HUD_IN_KILLFEED ? "K" : "";
@@ -682,12 +683,18 @@ function bodyPos(b) {
     if (b.ent) { try { if (b.ent.IsValid()) return b.ent.GetAbsOrigin(); } catch (e) { } b.ent = null; }
     return b.pos;
 }
-function bodyTemplate() {
-    const t = Instance.FindEntityByName(CONFIG.BODY_TEMPLATE);
+function findTemplate(name) {
+    const t = name ? Instance.FindEntityByName(name) : undefined;
     return t instanceof PointTemplate ? t : undefined;
 }
+function bodyTemplate(team) {
+    const ct = findTemplate(CONFIG.BODY_TEMPLATE), t = findTemplate(CONFIG.BODY_TEMPLATE_T);
+    return team === 2 ? t || ct : ct || t;
+}
 function spawnBody(pawn, model) {
-    const tpl = bodyTemplate();
+    let team = 3;
+    try { team = pawn.GetTeamNumber(); } catch (e) { }
+    const tpl = bodyTemplate(team);
     if (!tpl || bodies.length >= CONFIG.BODY_MAX) return null;
     try {
         const o = pawn.GetAbsOrigin(), v = pawn.GetAbsVelocity();
@@ -1053,7 +1060,7 @@ Instance.OnPlayerChat(({ player, text }) => {
         if (chatLog.length > 20) chatLog.shift();
     } catch (e) { }
     const t = text.trim().toLowerCase();
-    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "TTT: E on a body = identify / hold E = carry. Tap F = next weapon. Ctrl+F = chat for 15s. Hold F = shop (traitor/detective): W/S pick, E buy, F close.", 10);
+    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "E on a body = identify. Hold E on a prop = carry (E drop, R throw). Hold F = shop (traitor/detective): W/S pick, E buy, F close. Tab = scoreboard." + (CONFIG.HIDE_NATIVE_HUD ? " Tap F = next weapon. Ctrl+F = chat for " + CONFIG.CHAT_HUD_TIME + "s." : ""), 12);
 });
 
 function think() {

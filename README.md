@@ -10,7 +10,7 @@ One cs_script (`ttt.js`) plus an optional HUD. No server plugins. Works on any m
 2. Add to the map (Hammer, anywhere):
    - `point_script`: targetname `ttt_script`, cs_script `maps/scripts/ttt.vjs`
    - `custom_hud_layout`: targetname `ttt_hud`, layout `panorama/layout/custom_game/ttt_hud.vxml` (optional but strongly recommended: roles, shop, messages)
-   - `point_template` `ttt_body_tpl` → `prop_ragdoll` `ttt_body_src` (optional: carryable server-side bodies; keys in `tools/ttt_patch.json`)
+   - `point_template` `ttt_body_tpl` → `prop_ragdoll` `ttt_body_src` (CT body, `agents/models/ctm_sas/ctm_sas.vmdl`) and `ttt_body_tpl_t` → `ttt_body_src_t` (T body, `agents/models/tm_phoenix/tm_phoenix.vmdl`) (optional: carryable server-side bodies; keys in `tools/ttt_patch.json`). Not `characters/models/…`: those are one-bone placeholders and show as a box.
    - or run `python3 patch_vmap.py <map.vmap> <out.vmap> "" tools/ttt_patch.json` from [cs2mapping/create](https://github.com/skink52/cs2mapping/tree/main/create) (re-runnable).
 3. Build the map. HUD: the cs2port `run_build.bat` compiles the xml and css; otherwise `resourcecompiler -f -i` them.
 
@@ -49,8 +49,8 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Scoreboard | Tab shows the TTT scoreboard drawn over CS2's (`SCOREBOARD`): Terrorists / Missing in action / Confirmed dead / Spectators, karma. Living players see the dead as alive until the body is found; traitors see traitors in red, detectives show blue to all; the dead see everything. `COVER_TOPBAR` covers CS2's top bar (alive avatars, clock) with the TTT clock. The TTT panel over the killfeed is opaque. |
 | Karma | Damaging your own side costs karma; low karma scales your damage down (min 40%). |
 | Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
-| Carry | Hold E on a physics prop to pick it up; E drops, R throws. Can't stand on what you hold. Bodies: `CARRY_BODIES` (off, see Limits). |
-| Bodies | With the body template, every death spawns a server-side ragdoll (the template's model; the client ragdoll is shrunk away). |
+| Carry | Hold E on a physics prop or a body to pick it up; E drops, R throws. Can't stand on what you hold. |
+| Bodies | With the body templates, every death spawns a server-side ragdoll (T or CT agent by the victim's team; the client ragdoll is shrunk away). |
 | Chat | `!ttt` shows controls. |
 
 Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, `APPLY_CVARS` off to keep a server's own config).
@@ -62,7 +62,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
   player stats, so it keeps updating (expected, unverified in CS2). With that plugin, set `HIDE_KILLER: false` so kills credit the real killer.
 - `HIDE_NATIVE_HUD` (off by default): the pawn input `SetHUDVisibility false` hides CS2's whole HUD (killfeed included); the TTT HUD draws health, armor, ammo and a crosshair. It also turns off CS2's weapon switching (number keys / wheel, found in game), so `F_CYCLE` makes a tap of F switch weapons from the script (`SwitchToWeapon`).
 - Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (unverified that CS2 draws it above the feed; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
-- Server crash (29 Oct, from the minidump): `SetModel` on a freshly spawned `prop_ragdoll`, then `Teleport`, crashed in the ragdoll's Teleport (empty bone list). Bodies keep the template model and are never Teleported; `CARRY_BODIES` and `BODY_SET_MODEL` stay off until proven safe.
+- Server crash (29 Oct, from the minidump): `SetModel` on a freshly spawned `prop_ragdoll`, then `Teleport`, crashed in the ragdoll's Teleport (empty bone list). The template model was the one-bone placeholder `characters/models/ctm_sas`. Bodies now use the real agents and are never `SetModel`'d; `CARRY_BODIES` is on again (velocity only); `BODY_SET_MODEL` stays off.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.
 - The Esc menu shows CS2's scoreboard (dead players marked); the custom HUD isn't drawn over menus.
 - Chat from dead players carries CS2's `*DEAD*` tag (set by the engine). `sv_deadtalk 0` with `sv_alltalk 0` should keep dead text from the living (unverified in CS2).
