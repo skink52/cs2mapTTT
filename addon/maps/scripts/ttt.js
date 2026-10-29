@@ -33,7 +33,9 @@ const CONFIG = {
     DNA_TIME: 45,
     RADAR_TIME: 60,
     KARMA_START: 1000, KARMA_MAX: 1000, KARMA_MIN_MULT: 0.4,
-    KARMA_HURT: 0.5, KARMA_KILL: 60, KARMA_GOOD_KILL: 15, KARMA_CLEAN_ROUND: 40,
+    KARMA_HURT: 0.5, KARMA_KILL: 60, KARMA_GOOD_KILL: 15, KARMA_CLEAN_ROUND: 30, KARMA_ROUND_REGEN: 5,
+    // karma lives for the map session (a script can't keep data across maps); kept by player name over reconnects. Changes during a round
+    // apply at the next round start (scoreboard, HUD, damage), so they leak nothing about who was hit.
     TRAITOR_CREDITS: 2, DETECTIVE_CREDITS: 1, CREDIT_EVERY_N_DEATHS: 3,
     SHOP_CURSOR: false,
     SHOP_TIMEOUT: 20,
@@ -89,6 +91,7 @@ class PState {
         this.slot = slot;
         this.role = R_NONE;
         this.karma = CONFIG.KARMA_START;
+        this.karmaBase = CONFIG.KARMA_START;
         this.cleanRound = true;
         this.credits = 0;
         this.knife = false;
@@ -271,7 +274,7 @@ function drawHud(p, c) {
         else if (alive && p.role === R_DET) info = "Credits " + p.credits + "   E on a body: inspect / DNA";
         else if (!alive) info = "Traitors: " + traitorNames(-1);
     }
-    if (alive) info += (info ? (p.role === R_TRA ? "   " : "\n") : "") + "Karma " + Math.round(p.karma);
+    if (alive) info += (info ? (p.role === R_TRA ? "   " : "\n") : "") + "Karma " + Math.round(p.karmaBase);
     if (alive && p.trackSlot >= 0 && now < p.trackUntil) {
         const t = pawnOf(p.trackSlot);
         if (t && t.IsAlive()) track = "DNA: " + dirText(pawn.GetAbsOrigin(), pawn.GetEyeAngles().yaw, t.GetAbsOrigin()) + " (" + Math.ceil(p.trackUntil - now) + "s)";
@@ -316,7 +319,7 @@ function boardRows(view) {
         const team = c.GetTeamNumber(), al = isAlive(slot);
         const name = q.name || c.GetPlayerName() || "player";
         const role = live && q.role ? ROLE_NAME[q.role] : "";
-        const row = { t: name, k: String(Math.round(q.karma)), s: String(c.GetScore()), c: "", slot };
+        const row = { t: name, k: String(Math.round(q.karmaBase)), s: String(c.GetScore()), c: "", slot };
         if (live ? !q.role : team !== 2 && team !== 3) { row.c = "stSpec"; g[3].push(row); continue; }
         let gi = 0;
         if (!al && q.confirmed) { gi = 2; row.c = "stDead"; row.t += "  (" + role + ")"; }
@@ -381,7 +384,8 @@ function announce(text, secs = 7) { globalMsg = text; globalMsgUntil = now + sec
 function onRoundStart() {
     roundEnded = false; endFallbackAt = 0; bodies = []; heldBy.clear(); killQueue = []; deathsSinceCredit = 0; globalMsgUntil = 0;
     for (const p of players.values()) {
-        if (p.role && p.cleanRound) p.karma = Math.min(CONFIG.KARMA_MAX, p.karma + CONFIG.KARMA_CLEAN_ROUND);
+        if (p.role) p.karma = Math.min(CONFIG.KARMA_MAX, p.karma + CONFIG.KARMA_ROUND_REGEN + (p.cleanRound ? CONFIG.KARMA_CLEAN_ROUND : 0));
+        p.karmaBase = p.karma;
         p.scoreDelta = 0; p.confirmed = false; p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
         p.lastHit = null; p.pendingKill = false; closeShop(p); p.msgUntil = 0; p.hold = null;
     }
@@ -936,7 +940,7 @@ function onDeath(pawn, attacker, weapon) {
     if (k && k.role) {
         const kc = Instance.GetPlayerController(ks);
         if (side(k.role) === side(p.role)) { k.karma = Math.max(0, k.karma - CONFIG.KARMA_KILL); k.cleanRound = false; if (CONFIG.HIDE_KILLER) k.scoreDelta--; else if (kc) kc.AddScore(-1); }
-        else { k.karma = Math.min(CONFIG.KARMA_MAX, k.karma + CONFIG.KARMA_GOOD_KILL); if (CONFIG.HIDE_KILLER) k.scoreDelta++; else if (kc) kc.AddScore(1); }
+        else { if (p.role === R_TRA) k.karma = Math.min(CONFIG.KARMA_MAX, k.karma + CONFIG.KARMA_GOOD_KILL); if (CONFIG.HIDE_KILLER) k.scoreDelta++; else if (kc) kc.AddScore(1); }
     }
     if (p.role === R_TRA) {
         for (const q of players.values()) if (q.role === R_DET && isAlive(q.slot)) q.credits++;
@@ -964,7 +968,7 @@ Instance.OnModifyPlayerDamage((ev) => {
     let dmg = ev.damage, changed = false;
     if (phase === P_ACTIVE && as >= 0 && as !== vs) {
         const a = st(as);
-        if (a.karma < CONFIG.KARMA_MAX) { dmg *= Math.max(CONFIG.KARMA_MIN_MULT, a.karma / CONFIG.KARMA_MAX); changed = true; }
+        if (a.karmaBase < CONFIG.KARMA_MAX) { dmg *= Math.max(CONFIG.KARMA_MIN_MULT, a.karmaBase / CONFIG.KARMA_MAX); changed = true; }
         if (a.knife && ev.weapon) {
             try { if (ev.weapon.GetData().GetType() === CSWeaponType.KNIFE) { dmg = 500; a.knife = false; changed = true; } } catch (e) { }
         }
@@ -1032,12 +1036,18 @@ function flushScores() {
     }
 }
 Instance.OnRoundEnd(() => { flushScores(); if (phase !== P_WAIT) { phase = P_POST; roundEnded = true; endFallbackAt = 0; } for (const p of players.values()) closeShop(p); });
-Instance.OnPlayerConnect(({ player }) => { const s = player.GetPlayerSlot(); players.delete(s); st(s).name = clean(player.GetPlayerName()); });
+const savedKarma = new Map();
+function restoreKarma(p) {
+    const k = p.name && savedKarma.get(p.name);
+    if (k === undefined) return;
+    savedKarma.delete(p.name); p.karma = k; p.karmaBase = k;
+}
+Instance.OnPlayerConnect(({ player }) => { const s = player.GetPlayerSlot(); players.delete(s); const p = st(s); p.name = clean(player.GetPlayerName()); restoreKarma(p); });
 Instance.OnPlayerActivate(({ player }) => {
     const s = player.GetPlayerSlot(), p = st(s); p.name = clean(player.GetPlayerName()); resetHud(s);
     if (CONFIG.TRY_HIDE_KILLFEED) Instance.ClientCommand(s, "cl_drawhud_force_deathnotices -1");
 });
-Instance.OnPlayerDisconnect(({ playerSlot }) => { const q = players.get(playerSlot); if (q && q.hold) drop(q, null); players.delete(playerSlot); for (const b of bodies) if (b.killerSlot === playerSlot) b.killerSlot = -1; });
+Instance.OnPlayerDisconnect(({ playerSlot }) => { const q = players.get(playerSlot); if (q && q.hold) drop(q, null); if (q && q.name && q.karma < CONFIG.KARMA_START) savedKarma.set(q.name, q.karma); players.delete(playerSlot); for (const b of bodies) if (b.killerSlot === playerSlot) b.killerSlot = -1; });
 Instance.OnPlayerReset(({ player }) => {
     const s = slotOf(player);
     if (s < 0) return;
@@ -1096,8 +1106,11 @@ function think() {
             try {
                 let p = st(c.GetPlayerSlot());
                 if (p.ctrl !== c) {
-                    if (p.ctrl) { p = new PState(p.slot); players.set(p.slot, p); resetHud(p.slot); }
-                    p.ctrl = c; p.name = clean(c.GetPlayerName());
+                    if (p.ctrl) {
+                        if (p.name && p.karma < CONFIG.KARMA_START) savedKarma.set(p.name, p.karma);
+                        p = new PState(p.slot); players.set(p.slot, p); resetHud(p.slot);
+                    }
+                    p.ctrl = c; p.name = clean(c.GetPlayerName()); restoreKarma(p);
                     if (phase === P_ACTIVE && !p.role && isAlive(p.slot)) p.role = R_INN;
                 }
                 const pawn = c.GetPlayerPawn();
