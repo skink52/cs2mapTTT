@@ -787,6 +787,7 @@ function buttonHint(p, pawn) {
 }
 const ptState = new Map();
 function ptouchFire(id, activator) {
+    if (phase !== P_ACTIVE) return;   // map trigger outputs (win sequences) only in live rounds
     const s = ptState.get(id) || { last: -10, inside: false };
     ptState.set(id, s);
     if (now - s.last < 1) return;
