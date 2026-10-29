@@ -38,3 +38,4 @@ Unverified mechanics to watch: velocity on `prop_ragdoll` (moves the whole body?
 - FAILED: with HIDE_NATIVE_HUD players couldn't switch away from the pistol. Fixed: HIDE_NATIVE_HUD off by default.
 - 29 Oct (late): HIDE_NATIVE_HUD back on with script weapon switching: tap F = next weapon, hold F = shop. Test: switching works for every slot, grenades thrown normally, the shop opens on hold only, dropping (G) still works.
 - 29 Oct (late): messagemode does nothing with CS2's HUD hidden (skink52). Now: CS2's HUD only hidden while alive in a live round; Ctrl+F = HUD back for 15 s to chat; chat mirrored on the TTT HUD. Test: Ctrl+F then Y types; mirrored lines appear; HUD comes back on death / round end.
+- 30 Oct: HIDE_NATIVE_HUD off by default (skink52: world deaths are enough). CS2's HUD, weapon switching and chat stay normal; the TTT panel sits over the killfeed.

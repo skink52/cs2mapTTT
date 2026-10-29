@@ -16,7 +16,7 @@ const CONFIG = {
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
-    HIDE_NATIVE_HUD: true,        // no CS2 HUD (killfeed gone); SetHUDVisibility also blocks weapon switching, so tap F cycles weapons
+    HIDE_NATIVE_HUD: false,       // true: no CS2 HUD at all (SetHUDVisibility; also blocks weapon switching and chat, so tap F cycles weapons, Ctrl+F opens chat)
     SHOP_HOLD: 0.45,
     HIDE_ONLY_ALIVE_ACTIVE: true, // CS2's HUD (chat box, weapon wheel) comes back in prep, after the round and for the dead
     CHAT_HUD_TIME: 15,            // Ctrl+F: CS2's HUD back for this long, to type in chat
@@ -407,6 +407,7 @@ function wantHidden(p) {
     return !CONFIG.HIDE_ONLY_ALIVE_ACTIVE || phase === P_ACTIVE;
 }
 function syncNativeHud(p, pawn) {
+    if (!CONFIG.HIDE_NATIVE_HUD && p.nativeHidden === null) return;
     const h = wantHidden(p);
     if (p.nativeHidden === h) return;
     p.nativeHidden = h; nativeHud(pawn, !h); p.hud.delete("Ttt#stNoNat");
