@@ -39,7 +39,7 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 
 | | |
 |---|---|
-| Prep (25 s) | No damage, dead respawn, everyone gets a random primary. |
+| Prep (25 s) | Players can't hurt each other (the world still can), dead respawn, a random primary when the map has few weapons. |
 | Roles | 25% traitors (min 1), detectives from 8 players (1 per 8). Detectives are public (blue tint, Zeus). |
 | Win | All traitors dead → innocents. All others dead → traitors. Clock out → innocents. |
 | Clock | Haste: 3:30 + 20 s per innocent death, capped at 6:00. |

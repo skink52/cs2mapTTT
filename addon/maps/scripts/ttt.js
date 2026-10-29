@@ -822,9 +822,10 @@ function weaponName(w) {
 // ------------------------------------------------------------------ damage
 Instance.OnModifyPlayerDamage((ev) => {
     if (killing) return;
-    if (phase === P_PREP) return { abort: true };
     const victim = ev.player, vs = slotOf(victim);
     const as = slotOf(ev.attacker);
+    // prep: players can't hurt each other, but the world (trigger_hurt, falls, traps) still kills, and the dead respawn
+    if (phase === P_PREP) return as >= 0 && as !== vs ? { abort: true } : undefined;
     let dmg = ev.damage, changed = false;
     if (phase === P_ACTIVE && as >= 0 && as !== vs) {
         const a = st(as);

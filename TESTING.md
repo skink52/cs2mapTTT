@@ -5,7 +5,7 @@ Setup: 3+ humans (or 2 + `MIN_PLAYERS 2` for a look), `bot_quota 0`, map with bo
 1. Console shows `[ttt] loaded; HUD found`. HUD panel sits top right over the killfeed area, hidden while Tab is held.
    Key check: when someone dies, does the killfeed draw on top of the panel or underneath it? If on top, set `HUD_IN_KILLFEED: false` (left layout).
 1b. `HIDE_NATIVE_HUD`: CS2's HUD (killfeed, health, ammo, radar) gone after spawn; TTT health/armor/ammo/crosshair shown; chat still visible? AWP scope overlay still drawn? Comes back after respawn?
-2. Prep: no damage; dying respawns; random primary given once.
+2. Prep: players can't hurt each other, but trigger_hurts, falls and traps kill; dying respawns; random primary only on maps with few weapons.
 3. Roles dealt after 25 s; traitors see each other on the HUD; detective tinted blue with a Zeus.
 4. Killing a player in the round: killfeed shows only a world death; nobody's score changes until the round ends, then the ±1s and winner +1s land. Check the Assists column too.
 5. E on a body: global message with name and role. Detective gets weapon/time and a DNA line that points at the killer.
