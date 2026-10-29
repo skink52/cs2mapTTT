@@ -797,7 +797,7 @@ function ptouchFire(id, activator) {
     relay(id, "touch", act);
 }
 function ptouchPoll() {
-    if (!MD || !MD.ptouch) return;   // every phase: map props work in prep / solo too (win inputs are gated on P_ACTIVE themselves)
+    if (!MD || !MD.ptouch || phase !== P_ACTIVE) return;   // live rounds only; a prop placed during warmup/prep fires once the round goes live
     for (const id in MD.ptouch) {
         const c = MD.ptouch[id], s = ptState.get(id) || { last: -10, inside: false };
         ptState.set(id, s);
