@@ -36,3 +36,4 @@ Unverified mechanics to watch: velocity on `prop_ragdoll` (moves the whole body?
 
 - FAILED: shooting a player dead during the round crashed the server (prop_ragdoll SetModel + Teleport). Fixed: no model swap or Teleport on bodies, bodies not carryable.
 - FAILED: with HIDE_NATIVE_HUD players couldn't switch away from the pistol. Fixed: HIDE_NATIVE_HUD off by default.
+- 29 Oct (late): HIDE_NATIVE_HUD back on with script weapon switching: tap F = next weapon, hold F = shop. Test: switching works for every slot, grenades thrown normally, the shop opens on hold only, dropping (G) still works.

@@ -44,7 +44,8 @@ Then `python3 tools/build_data.py` bakes all `maps/*.json` into `ttt.js` (one sc
 | Win | All traitors dead → innocents. All others dead → traitors. Clock out → innocents. |
 | Clock | Haste: 3:30 + 20 s per innocent death, capped at 6:00. |
 | Bodies | E on a body: everyone learns name + role. Detective: weapon, time, and a 45 s DNA trail to the killer. |
-| Shop | Traitor/detective: double-tap F (inspect). W/S select, E buy, F/jump close. Credits from deaths. |
+| Shop | Traitor/detective: hold F. W/S select, E buy, F/jump close. Credits from deaths. |
+| Weapons | CS2's HUD is hidden (`HIDE_NATIVE_HUD`), which also turns off its weapon switching: tap F for the next weapon (rifle, pistol, knife, Zeus, grenades, healthshot); the list shows on the HUD. |
 | Karma | Damaging your own side costs karma; low karma scales your damage down (min 40%). |
 | Killers hidden | During the round every lethal player hit becomes a world kill: the killfeed shows only the death. Score changes (±1 per kill, +1 for surviving winners) are held back and added at round end, so the scoreboard leaks nothing. |
 | Carry | Hold E on a physics prop to pick it up; E drops, R throws. Can't stand on what you hold. Bodies: `CARRY_BODIES` (off, see Limits). |
@@ -58,7 +59,7 @@ Tunables: the `CONFIG` block at the top of `ttt.js` (times, ratios, shop items, 
 - The killfeed itself can't be removed by a map. On a CounterStrikeSharp server a tiny plugin can: a `HookMode.Pre` `EventPlayerDeath` handler setting
   `info.DontBroadcast = true` stops clients getting the death event (no killfeed); the server still sees it, and the scoreboard comes from networked
   player stats, so it keeps updating (expected, unverified in CS2). With that plugin, set `HIDE_KILLER: false` so kills credit the real killer.
-- `HIDE_NATIVE_HUD` (off): the pawn input `SetHUDVisibility false` hides CS2's whole HUD (killfeed included) and the TTT HUD draws health, armor, ammo and a crosshair, but it also stops players switching weapons (found in game), so it stays off.
+- `HIDE_NATIVE_HUD` (on): the pawn input `SetHUDVisibility false` hides CS2's whole HUD (killfeed included); the TTT HUD draws health, armor, ammo and a crosshair. It also turns off CS2's weapon switching (number keys / wheel, found in game), so `F_CYCLE` makes a tap of F switch weapons from the script (`SwitchToWeapon`).
 - Without the plugin: `HUD_IN_KILLFEED` (on) puts the HUD panel over the top-right killfeed area (unverified that CS2 draws it above the feed; set false for the left-side layout). `TRY_HIDE_KILLFEED` sends the client cvar `cl_drawhud_force_deathnotices -1` (unreliable, may persist on the client), off by default.
 - Server crash (29 Oct, from the minidump): `SetModel` on a freshly spawned `prop_ragdoll`, then `Teleport`, crashed in the ragdoll's Teleport (empty bone list). Bodies keep the template model and are never Teleported; `CARRY_BODIES` and `BODY_SET_MODEL` stay off until proven safe.
 - Without the body template, ragdolls are client-side: bodies are found by looking at where the player died and can't be moved.

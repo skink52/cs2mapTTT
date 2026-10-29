@@ -16,7 +16,8 @@ const CONFIG = {
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
-    HIDE_NATIVE_HUD: false,       // SetHUDVisibility also blocks weapon switching (no number keys / wheel), so off
+    HIDE_NATIVE_HUD: true,        // no CS2 HUD (killfeed gone); SetHUDVisibility also blocks weapon switching, so tap F cycles weapons
+    SHOP_HOLD: 0.45,              // hold F this long for the shop (traitor / detective)
     GIVE_PRIMARY: "auto",
     MAP_WEAPONS_ENOUGH: 10,
     BUTTON_CONE: 0.97,
@@ -31,6 +32,7 @@ const CONFIG = {
     TRAITOR_CREDITS: 2, DETECTIVE_CREDITS: 1, CREDIT_EVERY_N_DEATHS: 3,
     SHOP_CURSOR: false,
     SHOP_TIMEOUT: 20,
+    F_CYCLE: true,                // tap F = next weapon while CS2's HUD is hidden
     CHAT_ANNOUNCE: true,
     NOHUD_TRAITOR_ITEM: "weapon_decoy",
     DETECTIVE_TINT: { r: 120, g: 160, b: 255, a: 255 },
@@ -90,7 +92,8 @@ class PState {
         this.shopOpen = false;
         this.shopSel = 0;
         this.shopAt = 0;
-        this.lastF = -10;
+        this.fDownAt = -1;
+        this.fUsed = false;
         this.prevKeys = 0;
         this.frozen = false;
         this.msg = "";
@@ -349,8 +352,8 @@ function startActive() {
         const pawn = c.GetPlayerPawn();
         if (p.role === R_DET) { tint(pawn, true); give(pawn, "weapon_taser"); }
         if (p.role === R_TRA && !hasHud && CONFIG.NOHUD_TRAITOR_ITEM) give(pawn, CONFIG.NOHUD_TRAITOR_ITEM);
-        tell(p.slot, p.role === R_TRA ? "You are a TRAITOR. Kill the innocents. Double-tap F for the shop."
-            : p.role === R_DET ? "You are the DETECTIVE. Find the traitors. Double-tap F for the shop."
+        tell(p.slot, p.role === R_TRA ? "You are a TRAITOR. Kill the innocents. Hold F for the shop."
+            : p.role === R_DET ? "You are the DETECTIVE. Find the traitors. Hold F for the shop."
             : "You are INNOCENT. Survive and find the traitors.", 8);
     });
     mapFire("start");
@@ -461,12 +464,13 @@ function playerInput(p, c, pawn) {
     if (p.shopOpen) { for (let i = 0; i < 5; i++) if (pawn.IsInputPressed(KEYS[i])) keys |= 1 << i; }
     else {
         if (pawn.IsInputPressed(CSInputs.USE)) keys |= 4;
-        if (SHOP[p.role] && phase === P_ACTIVE && pawn.IsInputPressed(CSInputs.LOOK_AT_WEAPON)) keys |= 8;
+        if (pawn.IsInputPressed(CSInputs.LOOK_AT_WEAPON)) keys |= 8;
         if (p.hold && pawn.IsInputPressed(CSInputs.RELOAD)) keys |= 32;
     }
-    const down = keys & ~p.prevKeys;
+    const down = keys & ~p.prevKeys, up = p.prevKeys & ~keys;
     p.prevKeys = keys;
     if (p.shopOpen) {
+        if (down & 8) p.fUsed = true;
         const n = (SHOP[p.role] || []).length;
         if (down & 1) p.shopSel = (p.shopSel + n - 1) % n;
         if (down & 2) p.shopSel = (p.shopSel + 1) % n;
@@ -474,8 +478,14 @@ function playerInput(p, c, pawn) {
         if ((down & 8) || (down & 16) || now - p.shopAt > CONFIG.SHOP_TIMEOUT) closeShop(p);
         return;
     }
-    if (down & 8) {
-        if (now - p.lastF < 0.45 && SHOP[p.role]) { openShop(p, pawn); p.lastF = -10; } else p.lastF = now;
+    // F: tap = next weapon (CS2's own switching is off with its HUD), hold = shop
+    if (down & 8) { p.fDownAt = now; p.fUsed = false; }
+    if ((keys & 8) && !p.fUsed && p.fDownAt >= 0 && now - p.fDownAt >= CONFIG.SHOP_HOLD && SHOP[p.role] && phase === P_ACTIVE) {
+        p.fUsed = true; openShop(p, pawn); return;
+    }
+    if (up & 8) {
+        if (!p.fUsed && p.fDownAt >= 0 && now - p.fDownAt < CONFIG.SHOP_HOLD && CONFIG.F_CYCLE && CONFIG.HIDE_NATIVE_HUD) cycleWeapon(p, pawn);
+        p.fDownAt = -1; p.fUsed = false;
     }
     if (p.hold) {
         if (down & 4) { drop(p, null); p.grabTried = true; }
@@ -487,6 +497,24 @@ function playerInput(p, c, pawn) {
         p.grabTried = true; tryGrab(p, pawn);
     }
     if (p.hold) carry(p, pawn);
+}
+
+const CYCLE_EXTRA = ["weapon_taser", "weapon_hegrenade", "weapon_flashbang", "weapon_smokegrenade", "weapon_molotov", "weapon_incgrenade",
+    "weapon_decoy", "weapon_tagrenade", "weapon_healthshot"];
+function cycleWeapon(p, pawn) {
+    const list = [];
+    const add = (w) => { if (w && !list.includes(w)) list.push(w); };
+    try {
+        add(pawn.FindWeaponBySlot(CSGearSlot.RIFLE)); add(pawn.FindWeaponBySlot(CSGearSlot.PISTOL)); add(pawn.FindWeaponBySlot(CSGearSlot.KNIFE));
+        for (const n of CYCLE_EXTRA) add(pawn.FindWeapon(n));
+        add(pawn.FindWeaponBySlot(CSGearSlot.GRENADES)); add(pawn.FindWeaponBySlot(CSGearSlot.BOOSTS));
+    } catch (e) { return; }
+    if (list.length < 2) return;
+    const cur = pawn.GetActiveWeapon();
+    const next = list[(list.indexOf(cur) + 1) % list.length];
+    try { pawn.SwitchToWeapon(next); } catch (e) { return; }
+    p.msg = list.map(w => (w === next ? "[" : "") + weaponName(w).toUpperCase() + (w === next ? "]" : "")).join("  ");
+    p.msgUntil = now + 1.5;
 }
 
 // ------------------------------------------------------------------ carrying (props and bodies)
@@ -931,7 +959,7 @@ Instance.OnCustomHudClicked(({ player, buttonId }) => {
 Instance.OnPlayerChat(({ player, text }) => {
     if (!player) return;
     const t = text.trim().toLowerCase();
-    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "TTT: E on a body = identify. Double-tap F = shop (traitor/detective): W/S pick, E buy, F close.", 10);
+    if (t === "!ttt" || t === "/ttt") tell(player.GetPlayerSlot(), "TTT: E on a body = identify / hold E = carry. Tap F = next weapon. Hold F = shop (traitor/detective): W/S pick, E buy, F close.", 10);
 });
 
 function think() {
