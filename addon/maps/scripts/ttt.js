@@ -38,7 +38,7 @@ const CONFIG = {
     HUD_BUDGET: 600,
     CARRY: true,
     CARRY_CLASSES: ["prop_physics", "prop_physics_multiplayer", "prop_physics_override", "prop_ragdoll", "func_physbox"],
-    CARRY_RANGE: 110, CARRY_HOLD_TIME: 0.35, CARRY_DIST: 70, CARRY_GAIN: 12, CARRY_MAX_SPEED: 900, CARRY_BREAK_DIST: 200, CARRY_THROW: 550,
+    CARRY_RANGE: 110, CARRY_AIM_RADIUS: 28, CARRY_HOLD_TIME: 0.35, CARRY_DIST: 70, CARRY_GAIN: 12, CARRY_MAX_SPEED: 900, CARRY_BREAK_DIST: 200, CARRY_THROW: 550,
     BODY_TEMPLATE: "ttt_body_tpl",
     BODY_MAX: 48,
     HIDE_CLIENT_RAGDOLL: true,
@@ -65,7 +65,7 @@ const SHOP = {
 const SHOP_ROWS = 7;
 
 // MAP_DATA_BEGIN (tools/build_data.py writes this from maps/*.json; edit those, not this block)
-const MAP_DATA = {"ttt_minecraft":{"buttons":[{"id":"ttt_auto_2","pos":[-248.0,16.0,88.0],"desc":"Transforms the water in lava, Single use.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_3","pos":[-960.0,96.0,-1176.0],"desc":"Use this to destroy the little nether island. (with the glowstone)","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T1_Button","pos":[768.0,-512.0,512.0],"desc":"Destroys the glass floor.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T2_Button","pos":[592.0,-560.0,456.0],"desc":"Break dungeon glass","once":false,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_4","pos":[528.0,-448.0,640.0],"desc":"Sabotage the tester and make indicator red.","once":true,"wait":0.0,"range":1024.0,"off":false}],"checks":{"T1_Check":{"mins":[-970.0,-288.0,32.0],"maxs":[-954.0,-252.0,112.0],"on":true},"T_Cheat_Check":{"mins":[-928.0,-384.0,32.0],"maxs":[-768.0,-160.0,288.0],"on":true},"Portal_Check":{"mins":[0.0,672.0,416.0],"maxs":[64.0,688.0,512.0],"on":true},"Ttest_check":{"mins":[480.0,-480.0,576.0],"maxs":[520.0,-416.0,672.0],"on":false},"T2_Check":{"mins":[-1984.0,820.0,-228.0],"maxs":[-1920.0,840.0,-164.0],"on":true}},"roles":{"T1_logic":"any","Ttest_logic":"tra","T1_logic2":"tra","T_Cheat_Logic":"tra","Ttest_check_any":"any","Portal_Logic":"tra","Ttest_check_detect":"det","T2_Role":"tra"},"texts":{"Start_Text_1":{"msg":"Welcome to ttt_minecraft. Enjoy you play.","rcv":1},"Start_Text_2":{"msg":"Made by Finniespin. Visit http://conjointgaming.com/","rcv":1},"Cave_Text":{"msg":"Crowbar the iron ore!","rcv":0},"Start_Text_T":{"msg":"The traitor room is now available!","rcv":1},"Ttest_Text":{"msg":"Traitor tester is now available!","rcv":1},"Cave2_Text":{"msg":"Crowbar the iron ore!","rcv":0},"T2_Text_Decoy":{"msg":"You've got a Decoy!","rcv":0},"T2_Text_Radio":{"msg":"You've got a Radio!","rcv":0},"T2_Text_Knife":{"msg":"You've got a Knife!","rcv":0},"T2_Text_Tele":{"msg":"You've got a Teleporter!","rcv":0},"T2_Text_Pistol":{"msg":"You've got a Silenced Pistol!","rcv":0},"T2_Text_Flare":{"msg":"You've got a Flaregun!","rcv":0}},"owners":{"T1_Creeper_Owner":{"damager":"Trap_Creeper_Explosion","name":"the TNT minecart"},"Trap_Lava_Owner":{"damager":"Trap_Lava_Hurt","name":"the lava pool"},"Trap_Nether_Owner":{"damager":"Trap_Nether_Hurt","name":"the island as a trap"},"Trap_Portal_Owner":{"damager":"Trap_Portal_Hurt","name":"False nether portal"},"Ttest_Owner":{"damager":"Ttest_Hurt","name":"the traitor tester"},"Ttest_T1_Owner":{"damager":"Ttest_T1_Hurt","name":"glass floor fall"},"Ttest_T3_Owner":{"damager":"Ttest_Hurt","name":"the sabotaged tester"},"Ttest_T2_Owner":{"damager":"Ttest_T2_Hurt","name":"dungeon trap"}},"credits":{"T2_Credits":1},"wins":1,"settings":1}};
+const MAP_DATA = {"ttt_minecraft":{"buttons":[{"id":"ttt_auto_2","pos":[-248.0,16.0,88.0],"desc":"Transforms the water in lava, Single use.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_3","pos":[-960.0,96.0,-1176.0],"desc":"Use this to destroy the little nether island. (with the glowstone)","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T1_Button","pos":[768.0,-512.0,512.0],"desc":"Destroys the glass floor.","once":true,"wait":0.0,"range":1024.0,"off":false},{"id":"Ttest_T2_Button","pos":[592.0,-560.0,456.0],"desc":"Break dungeon glass","once":false,"wait":0.0,"range":1024.0,"off":false},{"id":"ttt_auto_4","pos":[528.0,-448.0,640.0],"desc":"Sabotage the tester and make indicator red.","once":true,"wait":0.0,"range":1024.0,"off":false}],"checks":{"T1_Check":{"mins":[-970.0,-288.0,32.0],"maxs":[-954.0,-252.0,112.0],"on":true},"T_Cheat_Check":{"mins":[-928.0,-384.0,32.0],"maxs":[-768.0,-160.0,288.0],"on":true},"Portal_Check":{"mins":[0.0,672.0,416.0],"maxs":[64.0,688.0,512.0],"on":true},"Ttest_check":{"mins":[480.0,-480.0,576.0],"maxs":[520.0,-416.0,672.0],"on":false},"T2_Check":{"mins":[-1984.0,820.0,-228.0],"maxs":[-1920.0,840.0,-164.0],"on":true}},"roles":{"T1_logic":"any","Ttest_logic":"tra","T1_logic2":"tra","T_Cheat_Logic":"tra","Ttest_check_any":"any","Portal_Logic":"tra","Ttest_check_detect":"det","T2_Role":"tra"},"texts":{"Start_Text_1":{"msg":"Welcome to ttt_minecraft. Enjoy you play.","rcv":1},"Start_Text_2":{"msg":"Made by Finniespin. Visit http://conjointgaming.com/","rcv":1},"Cave_Text":{"msg":"Crowbar the iron ore!","rcv":0},"Start_Text_T":{"msg":"The traitor room is now available!","rcv":1},"Ttest_Text":{"msg":"Traitor tester is now available!","rcv":1},"Cave2_Text":{"msg":"Crowbar the iron ore!","rcv":0},"T2_Text_Decoy":{"msg":"You've got a Decoy!","rcv":0},"T2_Text_Radio":{"msg":"You've got a Radio!","rcv":0},"T2_Text_Knife":{"msg":"You've got a Knife!","rcv":0},"T2_Text_Tele":{"msg":"You've got a Teleporter!","rcv":0},"T2_Text_Pistol":{"msg":"You've got a Silenced Pistol!","rcv":0},"T2_Text_Flare":{"msg":"You've got a Flaregun!","rcv":0}},"owners":{"T1_Creeper_Owner":{"damager":"Trap_Creeper_Explosion","name":"the TNT minecart"},"Trap_Lava_Owner":{"damager":"Trap_Lava_Hurt","name":"the lava pool"},"Trap_Nether_Owner":{"damager":"Trap_Nether_Hurt","name":"the island as a trap"},"Trap_Portal_Owner":{"damager":"Trap_Portal_Hurt","name":"False nether portal"},"Ttest_Owner":{"damager":"Ttest_Hurt","name":"the traitor tester"},"Ttest_T1_Owner":{"damager":"Ttest_T1_Hurt","name":"glass floor fall"},"Ttest_T3_Owner":{"damager":"Ttest_Hurt","name":"the sabotaged tester"},"Ttest_T2_Owner":{"damager":"Ttest_T2_Hurt","name":"dungeon trap"}},"credits":{"T2_Credits":1},"wins":1,"settings":1,"ptouch":{"ttt_pt_1":{"ent":"minecart","mins":[-1796.0,480.0,128.0],"maxs":[-1792.0,544.0,224.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_2":{"ent":"minecart","mins":[-2016.0,544.0,960.0],"maxs":[-1952.0,640.0,992.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"Ttest_CraftTrigger":{"ent":"GoldBlock","mins":[576.0,-448.0,608.0],"maxs":[608.0,-416.0,612.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,8.0]},"ttt_pt_3":{"ent":"minecart","mins":[480.0,-640.0,608.0],"maxs":[544.0,-624.0,672.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_4":{"ent":"minecart","mins":[608.0,-640.0,608.0],"maxs":[672.0,-624.0,672.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]},"ttt_pt_5":{"ent":"DiaBlock","mins":[-1824.0,576.0,736.0],"maxs":[-1792.0,608.0,740.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,0.0]},"Pigman_Furnace_Trigger":{"ent":"Clay","mins":[-1248.0,-640.0,-1248.0],"maxs":[-1216.0,-636.0,-1216.0],"half":[8.0,8.0,8.0],"off":[0.0,0.0,0.0]},"ttt_pt_6":{"ent":"minecart","mins":[16.0,632.0,496.0],"maxs":[48.0,664.0,576.0],"half":[20.0,20.0,10.0],"off":[0.0,0.0,0.0]}},"alphas":[],"duck":1}};
 // MAP_DATA_END
 
 const R_NONE = 0, R_INN = 1, R_TRA = 2, R_DET = 3;
@@ -100,6 +100,9 @@ class PState {
         this.loadoutAt = 0;
         this.ctrl = null;
         this.hold = null;
+        this.holdStall = 0;
+        this.alpha = 255;
+        this.duckUntil = 0;
         this.useAt = -1;
         this.grabTried = false;
         this.pendingAttacker = undefined;
@@ -392,6 +395,16 @@ function nativeHud(pawn, visible) {
 }
 function tint(pawn, det) {
     try { if (pawn && pawn.IsValid()) pawn.SetColor(det ? CONFIG.DETECTIVE_TINT : { r: 255, g: 255, b: 255, a: 255 }); } catch (e) { }
+    const s = slotOf(pawn);
+    if (s >= 0) st(s).alpha = 255;
+}
+function setAlpha(pawn, a) {
+    const s = slotOf(pawn);
+    if (s < 0 || !pawn.IsAlive()) return;
+    st(s).alpha = a;
+    const base = st(s).role === R_DET && phase === P_ACTIVE ? CONFIG.DETECTIVE_TINT : { r: 255, g: 255, b: 255 };
+    try { pawn.SetColor({ r: base.r, g: base.g, b: base.b, a }); } catch (e) { }
+    try { const w = pawn.GetActiveWeapon(); if (w) w.SetColor({ r: 255, g: 255, b: 255, a }); } catch (e) { }
 }
 function give(pawn, cls) {
     if (!pawn || !pawn.IsValid() || !pawn.IsAlive()) return;
@@ -484,16 +497,47 @@ function tryGrab(p, pawn) {
     const eye = pawn.GetEyePosition(), f = forward(pawn.GetEyeAngles()), r = CONFIG.CARRY_RANGE;
     const tr = Instance.TraceLine({ start: eye, end: { x: eye.x + f.x * r, y: eye.y + f.y * r, z: eye.z + f.z * r }, ignoreEntity: pawn });
     let e = tr.didHit ? tr.hitEntity : undefined;
-    if (!e || e instanceof CSPlayerPawn || e.IsWorld()) return;
-    if (!CONFIG.CARRY_CLASSES.includes(e.GetClassName()) && !bodies.some(b => b.ent === e)) return;
+    const reach = tr.didHit ? Math.min(r, tr.fraction * r + 8) : r;
+    if (!e || e instanceof CSPlayerPawn || e.IsWorld() || !carryable(e)) e = nearestCarryable(eye, f, reach);
+    if (!e) return;
     if (heldBy.has(e) || pawn.GetGroundEntity() === e) return;
-    p.hold = e; heldBy.set(e, p.slot);
+    p.hold = e; p.holdStall = 0; heldBy.set(e, p.slot);
+    try { e.SetOwner(pawn); } catch (err) { }
+}
+function carryable(e) {
+    try { return CONFIG.CARRY_CLASSES.includes(e.GetClassName()) || bodies.some(b => b.ent === e); } catch (err) { return false; }
+}
+function nearestCarryable(eye, f, reach) {
+    // debris objects (the gold block) can be missed by the trace: take the carryable entity closest to the aim line
+    let best = null, bestD = CONFIG.CARRY_AIM_RADIUS;
+    const list = [];
+    for (const cls of CONFIG.CARRY_CLASSES) for (const e of Instance.FindEntitiesByClass(cls)) list.push(e);
+    for (const b of bodies) if (b.ent) list.push(b.ent);
+    for (const e of list) {
+        let o;
+        try { o = e.GetAbsOrigin(); } catch (err) { continue; }
+        const dx = o.x - eye.x, dy = o.y - eye.y, dz = o.z - eye.z, t = dx * f.x + dy * f.y + dz * f.z;
+        if (t < 0 || t > reach + 16) continue;
+        const px = dx - f.x * t, py = dy - f.y * t, pz = dz - f.z * t, dd = Math.sqrt(px * px + py * py + pz * pz);
+        if (dd >= bestD) continue;
+        const tr = Instance.TraceLine({ start: eye, end: o, ignoreEntity: e, ignorePlayers: true });
+        if (tr.didHit && tr.fraction < 0.9) continue;
+        bestD = dd; best = e;
+    }
+    return best;
+}
+const ownerClear = [];
+function releaseOwner(e, later) {
+    if (!e) return;
+    if (later) { ownerClear.push({ e, at: now + 1.5 }); return; }
+    try { if (e.IsValid()) e.SetOwner(undefined); } catch (err) { }
 }
 function drop(p, throwerPawn) {
     const e = p.hold;
     p.hold = null;
     if (!e) return;
     heldBy.delete(e);
+    releaseOwner(e, !!throwerPawn);
     if (!throwerPawn) return;
     try {
         const f = forward(throwerPawn.GetEyeAngles()), v = throwerPawn.GetAbsVelocity(), t = CONFIG.CARRY_THROW;
@@ -511,6 +555,9 @@ function carry(p, pawn) {
         if (dist > CONFIG.CARRY_BREAK_DIST) { drop(p, null); return; }
         let k = CONFIG.CARRY_GAIN;
         if (dist * k > CONFIG.CARRY_MAX_SPEED) k = CONFIG.CARRY_MAX_SPEED / dist;
+        // motion disabled (DisableMotion, frozen by the map): it doesn't move however we push it, so let go
+        const v = e.GetAbsVelocity();
+        if (dist > 24 && v.x * v.x + v.y * v.y + v.z * v.z < 4) { if (++p.holdStall > 16) { drop(p, null); return; } } else p.holdStall = 0;
         e.Teleport({ velocity: { x: dx * k, y: dy * k, z: dz * k }, angularVelocity: { x: 0, y: 0, z: 0 } });
     } catch (err) { drop(p, null); }
 }
@@ -546,6 +593,7 @@ const WEAPON_CLASSES = ["ak47", "m4a1", "m4a1_silencer", "famas", "galilar", "au
 function mapFire(ev) { if (MD && MD.settings) Instance.EntFireAtName({ name: "ttt_ms__" + ev, input: "Trigger", delay: 0.05 }); }
 function relay(id, ev, activator) { Instance.EntFireAtName({ name: id + "__" + ev, input: "Trigger", activator }); }
 function mapRoundStart() {
+    ptState.clear(); ownerClear.length = 0;
     mapState.btn.clear(); mapState.chk.clear(); mapState.txtOff.clear(); mapState.owner.clear();
     if (MD) {
         for (const b of MD.buttons || []) mapState.btn.set(b.id, { used: false, next: 0, off: !!b.off });
@@ -553,7 +601,7 @@ function mapRoundStart() {
     }
     mapWeapons = 0;
     for (const w of WEAPON_CLASSES) for (const e of Instance.FindEntitiesByClass("weapon_" + w)) { try { if (!e.GetOwner()) mapWeapons++; } catch (x) { } }
-    Instance.EntFireAtName({ name: "ttt_ms__prep", input: "Trigger", delay: 0.5 });
+    if (MD && MD.settings) Instance.EntFireAtName({ name: "ttt_ms__prep", input: "Trigger", delay: 0.05 });
 }
 function roleOk(slot, want) {
     const r = st(slot).role;
@@ -593,6 +641,34 @@ function pressButton(p, pawn) {
 function buttonHint(p, pawn) {
     const b = aimButton(pawn);
     if (b) { p.msg = "[E] traitor trap: " + (b.desc || "use"); p.msgUntil = now + 0.5; }
+}
+const ptState = new Map();
+function ptouchFire(id, activator) {
+    const s = ptState.get(id) || { last: -10, inside: false };
+    ptState.set(id, s);
+    if (now - s.last < 1) return;
+    s.last = now;
+    let act = activator;
+    if (!act) { const c = MD.ptouch[id]; act = Instance.FindEntityByName(c.ent); }
+    for (const q of players.values()) if (q.hold && act && q.hold === act) drop(q, null);
+    relay(id, "touch", act);
+}
+function ptouchPoll() {
+    if (!MD || !MD.ptouch || phase !== P_ACTIVE) return;
+    for (const id in MD.ptouch) {
+        const c = MD.ptouch[id], s = ptState.get(id) || { last: -10, inside: false };
+        ptState.set(id, s);
+        let hit = null;
+        for (const e of Instance.FindEntitiesByName(c.ent)) {
+            let o;
+            try { o = e.GetAbsOrigin(); } catch (err) { continue; }
+            const x = o.x + c.off[0], y = o.y + c.off[1], z = o.z + c.off[2];
+            if (x + c.half[0] >= c.mins[0] && x - c.half[0] <= c.maxs[0] && y + c.half[1] >= c.mins[1] && y - c.half[1] <= c.maxs[1]
+                && z + c.half[2] >= c.mins[2] && z - c.half[2] <= c.maxs[2]) { hit = e; break; }
+        }
+        if (hit && !s.inside) ptouchFire(id, hit);
+        s.inside = !!hit;
+    }
 }
 function mapInput(name, fn) { Instance.OnScriptInput(name, (inp) => { try { fn(inp); } catch (e) { log(name + ": " + e); } }); }
 if (MD) {
@@ -646,6 +722,14 @@ if (MD) {
             if (q && q.credits >= n) { q.credits -= n; relay(id, "ok", activator); } else relay(id, "fail", activator);
         });
     }
+    for (const id in MD.ptouch || {}) {
+        mapInput("ttt:ptouch:" + id, ({ activator }) => ptouchFire(id, activator));
+    }
+    if (MD.duck) {
+        mapInput("ttt:duck:on", ({ activator }) => { const s = slotOf(toPawn(activator)); if (s >= 0) { st(s).duckUntil = now + 30; tell(s, "Crouch (hold Ctrl) to crawl through", 4); } });
+        mapInput("ttt:duck:off", ({ activator }) => { const s = slotOf(toPawn(activator)); if (s >= 0) st(s).duckUntil = 0; });
+    }
+    for (const a of MD.alphas || []) mapInput("ttt:alpha:" + a, ({ activator }) => { const pw = toPawn(activator); if (pw) setAlpha(pw, a); });
     if (MD.wins) {
         mapInput("ttt:win:t", () => { if (phase === P_ACTIVE) endRound(R_TRA, "The map gave the traitors the win"); });
         mapInput("ttt:win:i", () => { if (phase === P_ACTIVE) endRound(R_INN, "The map gave the innocents the win"); });
@@ -854,6 +938,10 @@ function think() {
         hudBudget = CONFIG.HUD_BUDGET;
         if (Instance.IsWarmupPeriod() && phase !== P_WAIT) phase = P_WAIT;
         runKills();
+        if (tick % 8 === 4) {
+            ptouchPoll();
+            for (let i = ownerClear.length - 1; i >= 0; i--) if (now >= ownerClear[i].at) { releaseOwner(ownerClear[i].e, false); ownerClear.splice(i, 1); }
+        }
         if (phase === P_PREP && now >= phaseEnd) startActive();
         if (phase === P_ACTIVE && tick % 8 === 0) checkWin();
         if (roundEnded && endFallbackAt && now >= endFallbackAt) {
@@ -878,6 +966,8 @@ function think() {
                     if (p.loadoutAt && now >= p.loadoutAt) { p.loadoutAt = 0; if (phase === P_PREP) giveLoadout(pawn); }
                     playerInput(p, c, pawn);
                     if (p.role === R_TRA && phase === P_ACTIVE && !p.shopOpen && MD && (tick + p.slot) % 8 === 0) buttonHint(p, pawn);
+                    if (p.duckUntil > now && (tick + p.slot) % 32 === 0 && !pawn.IsDucked()) { p.msg = "Crouch (hold Ctrl) to crawl through"; p.msgUntil = now + 0.6; }
+                    if (p.alpha < 255 && (tick + p.slot) % 16 === 0) { try { const w = pawn.GetActiveWeapon(); if (w) w.SetColor({ r: 255, g: 255, b: 255, a: p.alpha }); } catch (e) { } }
                 } else if (p.shopOpen || p.frozen) closeShop(p);
                 if (h && (tick + p.slot) % 8 === 0) drawHud(p, c);
             } catch (e) { log("player " + c.GetPlayerSlot() + ": " + e); }

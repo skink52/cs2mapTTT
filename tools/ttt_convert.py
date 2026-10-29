@@ -65,7 +65,7 @@ def make_relay(c, name):
 
 
 # ---------------------------------------------------------------- pass 1: name and collect the ttt entities
-data = {'buttons': [], 'checks': {}, 'roles': {}, 'texts': {}, 'owners': {}, 'credits': {}, 'wins': 0, 'settings': 0}
+data = {'buttons': [], 'checks': {}, 'roles': {}, 'texts': {}, 'owners': {}, 'credits': {}, 'wins': 0, 'settings': 0, 'ptouch': {}, 'alphas': [], 'duck': 0}
 ttt = {}          # targetname -> (class, node)
 n_auto = 0
 for c in ents:
@@ -174,6 +174,75 @@ for e, conns in settings_ev.items():
     r = vmaplib.ent('logic_relay', (0, 0, 0), group='ttt', targetname='ttt_ms__' + e, spawnflags='0', StartDisabled='0')
     r.attr('connectionsData')[2] = conns
 
+# ---------------------------------------------------------------- map logic CS2 can't run as written (re-runnable on converted maps)
+ents = vmapgen.entities(d)
+by_name = {}
+for c in ents:
+    if P(c).get('targetname'): by_name.setdefault(P(c).get('targetname'), []).append(c)
+PHYS_CLS = ('prop_physics', 'prop_physics_multiplayer', 'prop_physics_override', 'func_physbox', 'prop_physics_respawnable')
+extra = {'ptouch': {}, 'alphas': [], 'duck': 0}
+# 1. texts the TTT prep kills (sandbox-mode warnings): never display them from logic_auto
+prep_kills = set()
+for r in by_name.get('ttt_ms__prep', []):
+    for k in r.get('connectionsData') or []:
+        if k.get('inputName') == 'Kill': prep_kills.add(k.get('targetName'))
+n_err = 0
+for c in ents:
+    if cls_of(c) != 'logic_auto': continue
+    a = c.attr('connectionsData'); keep_c = [k for k in a[2] if not (k.get('targetName') in prep_kills and k.get('inputName') in ('Display', 'ShowMessage'))]
+    n_err += len(a[2]) - len(keep_c); a[2] = keep_c
+# 2. triggers filtered to one physics object (gold block into the tester): touches go through ttt.js, which also polls the object
+for c in ents:
+    if not cls_of(c).startswith('trigger_'): continue
+    f = by_name.get(P(c).get('filtername') or '', [None])[0]
+    if f is None or cls_of(f) != 'filter_activator_name' or (P(f).get('Negated') or '0') not in ('0', 'Allow entities that match criteria'): continue
+    obj = P(f).get('filtername') or ''
+    if not any(cls_of(o) in PHYS_CLS for o in by_name.get(obj, [])): continue
+    tn = P(c).get('targetname')
+    if not tn:
+        k3 = 1
+        while 'ttt_pt_%d' % k3 in by_name: k3 += 1
+        tn = 'ttt_pt_%d' % k3; set_key(c, 'targetname', tn); by_name[tn] = [c]
+    lo, hi = mesh_box(c)
+    o = next(o for o in by_name[obj] if cls_of(o) in PHYS_CLS)
+    olo, ohi = mesh_box(o) if any(m.type == 'CMapMesh' for m in o.get('children') or []) else (None, None)
+    oc = o.get('origin')
+    half = [round(max(4.0, (ohi[i] - olo[i]) / 2), 1) for i in range(3)] if olo else [16.0, 16.0, 16.0]
+    off = [round((ohi[i] + olo[i]) / 2 - oc[i], 1) for i in range(3)] if olo else [0.0, 0.0, 0.0]
+    extra['ptouch'][tn] = {'ent': obj, 'mins': lo, 'maxs': hi, 'half': half, 'off': off}
+    a = c.attr('connectionsData')
+    moved = [k for k in a[2] if k.get('outputName') == 'OnStartTouch' and k.get('overrideParam') != 'ttt:ptouch:' + tn]
+    if not moved: continue
+    for k in moved: k.set('outputName', T_STRING, 'OnTrigger')
+    a[2] = [k for k in a[2] if k not in moved] + [conn('OnStartTouch', SCRIPT, 'RunScriptInput', 'ttt:ptouch:' + tn)]
+    rel = by_name.get(tn + '__touch')
+    if rel: rel[0].attr('connectionsData')[2].extend(moved)
+    else:
+        r = vmaplib.ent('logic_relay', c.get('origin'), group='ttt', targetname=tn + '__touch', spawnflags='0', StartDisabled='0')
+        r.attr('connectionsData')[2] = moved
+# 3. point_clientcommand +duck / -duck (CS2 blocks client commands) -> a crouch prompt; 4. !activator Alpha / rendermode -> ttt.js
+cc = {P(c).get('targetname') for c in ents if cls_of(c) == 'point_clientcommand' and P(c).get('targetname')}
+n_duck = n_alpha = 0
+for c in ents:
+    a = c.attr('connectionsData'); out = []
+    for k in a[2] or []:
+        t, inp, prm = k.get('targetName'), k.get('inputName'), (k.get('overrideParam') or '').strip()
+        if t in cc and inp == 'Command' and prm in ('+duck', '-duck'):
+            k.set('targetName', T_STRING, SCRIPT); k.set('inputName', T_STRING, 'RunScriptInput')
+            k.set('overrideParam', T_STRING, 'ttt:duck:' + ('on' if prm == '+duck' else 'off')); n_duck += 1; extra['duck'] = 1
+        elif t == '!activator' and inp == 'Alpha':
+            v = max(0, min(255, int(float(prm or '255'))))
+            k.set('targetName', T_STRING, SCRIPT); k.set('inputName', T_STRING, 'RunScriptInput'); k.set('overrideParam', T_STRING, 'ttt:alpha:%d' % v)
+            if v not in extra['alphas']: extra['alphas'].append(v)
+            n_alpha += 1
+        elif t == '!activator' and inp == 'AddOutput' and prm.lower().startswith('rendermode'):
+            n_alpha += 1; continue
+        out.append(k)
+    a[2] = out
+for k2 in ('ptouch', 'alphas', 'duck'):
+    if k2 == 'ptouch': data[k2] = extra[k2]
+    else: data[k2] = sorted(extra[k2]) if isinstance(extra[k2], list) else extra[k2]
+
 # ---------------------------------------------------------------- the TTT entities themselves (only those missing)
 have = {(cls_of(c), P(c).get('targetname') or '') for c in vmapgen.entities(d)}
 classes = {k for k, _ in have}
@@ -204,12 +273,18 @@ orph = [e for e in d.elements if not keep(e)]
 d.elements = [e for e in d.elements if keep(e)]
 vmapgen.finish(d, A.out, group=None, first_run_cleanup=False, strip_refs=())
 os.makedirs(A.data, exist_ok=True)
+jf = os.path.join(A.data, A.map + '.json')
+if os.path.exists(jf) and not ttt:          # a re-run on a converted map: keep what the first run learnt from the ttt_* entities
+    old = json.load(open(jf))
+    for k in ('buttons', 'checks', 'roles', 'texts', 'owners', 'credits', 'wins', 'settings'): data[k] = old.get(k, data[k])
 if any(data[k] for k in data):
-    json.dump(data, open(os.path.join(A.data, A.map + '.json'), 'w'), indent=1)
+    json.dump(data, open(jf, 'w'), indent=1)
 left = [cls_of(c) for c in vmapgen.entities(dmx.DMX.load(A.out)) if cls_of(c).startswith('ttt_') or cls_of(c).startswith('weapon_ttt')]
 print('%s: %d ttt entities converted, %d inputs re-aimed at %s, %d orphan elements removed; buttons %d, testers %d, role tests %d, '
       'texts %d, owners %d, credits %d, win %d, settings %d' % (A.map, sum(len(v) for v in ttt.values()), rerouted, SCRIPT, len(orph),
       len(data['buttons']), len(data['checks']), len(data['roles']), len(data['texts']), len(data['owners']), len(data['credits']),
       data['wins'], data['settings']))
+print('  sandbox texts no longer shown by logic_auto: %d, physics-object triggers polled: %d, crouch prompts: %d, alpha outputs: %d'
+      % (n_err, len(data['ptouch']), n_duck, n_alpha))
 for x in dropped: print('  dropped:', x)
 assert not left, 'ttt classes left: %s' % left
