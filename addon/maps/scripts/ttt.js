@@ -16,6 +16,8 @@ const CONFIG = {
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
+    SCOREBOARD: true,             // Tab shows the TTT scoreboard over CS2's: the dead stay listed as alive until their body is found
+    COVER_TOPBAR: true,           // cover CS2's top bar (alive avatars, clock) during the round with the TTT clock
     HIDE_NATIVE_HUD: false,       // true: no CS2 HUD at all (SetHUDVisibility; also blocks weapon switching and chat, so tap F cycles weapons, Ctrl+F opens chat)
     SHOP_HOLD: 0.45,
     HIDE_ONLY_ALIVE_ACTIVE: true, // CS2's HUD (chat box, weapon wheel) comes back in prep, after the round and for the dead
@@ -121,6 +123,8 @@ class PState {
         this.nativeHidden = null;
         this.chatHudUntil = 0;
         this.radarText = "";
+        this.confirmed = false;
+        this.sbAt = 0;
     }
 }
 
@@ -281,6 +285,9 @@ function drawHud(p, c) {
     hudVar(p, K + "Track", "track", track);
     hudVar(p, "MsgA", "msga", now < globalMsgUntil ? globalMsg : "");
     hudVar(p, "MsgB", "msgb", now < p.msgUntil ? p.msg : "");
+    hudCls(p, "Ttt", "stTop", CONFIG.COVER_TOPBAR && phase >= P_ACTIVE);
+    if (CONFIG.COVER_TOPBAR && phase >= P_ACTIVE) hudVar(p, "TopT", "t", phase === P_POST ? "ROUND OVER" : (p.role === R_TRA || !alive ? "" : "HASTE ") + mmss(left));
+    if (CONFIG.SCOREBOARD && (now >= p.sbAt || (alive && pawn.IsInputPressed(CSInputs.SHOW_SCORES)))) { p.sbAt = now + 1; drawBoard(p, alive); }
     const items = SHOP[p.role] || [];
     const open = p.shopOpen && alive;
     hudCls(p, "ShopBox", "stOpen", open);
@@ -292,6 +299,55 @@ function drawHud(p, c) {
             hudCls(p, "Shop" + i, "stSel", !!it && i === p.shopSel);
             hudCls(p, "Shop" + i, "stOff", !it || it.cost > p.credits);
         }
+    }
+}
+const SB_ROWS = 48, SB_KINDS = ["stHead", "stDet", "stTra", "stMia", "stDead", "stSpec"];
+let sbCache = { at: -1, views: [] };
+function boardRows(view) {
+    if (sbCache.at !== tick) sbCache = { at: tick, views: [] };
+    if (sbCache.views[view]) return sbCache.views[view];
+    const g = [[], [], [], []];
+    const live = phase >= P_ACTIVE;
+    for (const c of liveControllers()) {
+        const slot = c.GetPlayerSlot(), q = players.get(slot);
+        if (!q) continue;
+        const team = c.GetTeamNumber(), al = isAlive(slot);
+        const name = q.name || c.GetPlayerName() || "player";
+        const role = live && q.role ? ROLE_NAME[q.role] : "";
+        const row = { t: name, k: String(Math.round(q.karma)), c: "", slot };
+        if (live ? !q.role : team !== 2 && team !== 3) { row.c = "stSpec"; g[3].push(row); continue; }
+        let gi = 0;
+        if (!al && q.confirmed) { gi = 2; row.c = "stDead"; row.t += "  (" + role + ")"; }
+        else if (!al && view === 2) { gi = 1; row.c = "stMia"; if (role) row.t += "  (" + role + ")"; }
+        if (gi === 0 && live) {
+            if (q.role === R_DET) row.c = "stDet";
+            else if (q.role === R_TRA && view >= 1) row.c = "stTra";
+        }
+        g[gi].push(row);
+    }
+    const titles = ["TERRORISTS", "MISSING IN ACTION", "CONFIRMED DEAD", "SPECTATORS"];
+    const rows = [];
+    for (let i = 0; i < 4; i++) {
+        if (i && !g[i].length) continue;
+        g[i].sort((a, b) => a.t.toLowerCase() < b.t.toLowerCase() ? -1 : 1);
+        rows.push({ t: titles[i] + "  (" + g[i].length + ")", k: i === 0 ? "KARMA" : "", c: "stHead", slot: -1 });
+        for (const r of g[i]) rows.push(r);
+    }
+    sbCache.views[view] = rows;
+    return rows;
+}
+function drawBoard(p, alive) {
+    const view = phase === P_POST || !alive ? 2 : p.role === R_TRA && phase >= P_ACTIVE ? 1 : 0;
+    const rows = boardRows(view);
+    hudCls(p, "Sb", "stOn", true);
+    hudVar(p, "SbSub", "sub", phase === P_WAIT ? "Waiting for players" : phase === P_PREP ? "Preparing" : phase === P_POST ? "Round over" : "Round in progress");
+    for (let i = 0; i < SB_ROWS; i++) {
+        let r = rows[i];
+        if (i === SB_ROWS - 1 && rows.length > SB_ROWS) r = { t: "+" + (rows.length - SB_ROWS + 1) + " more", k: "", c: "stHead", slot: -1 };
+        hudVar(p, "SbN" + i, "n", r ? r.t : "");
+        hudVar(p, "SbK" + i, "k", r ? r.k : "");
+        for (const k of SB_KINDS) hudCls(p, "SbR" + i, k, !!r && r.c === k);
+        hudCls(p, "SbR" + i, "stMe", !!r && r.slot === p.slot);
     }
 }
 function traitorNames(exceptSlot) {
@@ -322,7 +378,7 @@ function onRoundStart() {
     roundEnded = false; endFallbackAt = 0; bodies = []; heldBy.clear(); killQueue = []; deathsSinceCredit = 0; globalMsgUntil = 0;
     for (const p of players.values()) {
         if (p.role && p.cleanRound) p.karma = Math.min(CONFIG.KARMA_MAX, p.karma + CONFIG.KARMA_CLEAN_ROUND);
-        p.scoreDelta = 0; p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
+        p.scoreDelta = 0; p.confirmed = false; p.role = R_NONE; p.credits = 0; p.knife = false; p.radarUntil = 0; p.trackUntil = 0; p.trackSlot = -1; p.cleanRound = true;
         p.lastHit = null; p.pendingKill = false; closeShop(p); p.msgUntil = 0; p.hold = null;
     }
     if (Instance.IsWarmupPeriod()) { phase = P_WAIT; applyCvars(true); return; }
@@ -814,6 +870,8 @@ function searchBody(p, pawn) {
     if (!best) return false;
     if (!best.found) {
         best.found = true;
+        const bq = players.get(best.slot);
+        if (bq && bq.role === best.role) bq.confirmed = true;
         announce(p.name + " found the body of " + best.name + ". They were " + (best.role === R_INN ? "an " : "a ") + ROLE_NAME[best.role] + ".");
     }
     if (p.role === R_DET && !best.dnaTaken) {

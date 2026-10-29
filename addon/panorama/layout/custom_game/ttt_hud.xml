@@ -4,6 +4,7 @@
 	</styles>
 	<Panel class="TttHost" hittest="false">
 		<Panel id="Ttt" class="Ttt" hittest="false">
+			<Panel class="TopCover" hittest="false"><Label id="TopT" class="TopText" hittest="false" text="{s:t}" /></Panel>
 			<Panel id="Cross" class="Cross" hittest="false">
 				<Panel class="CrossH" hittest="false" />
 				<Panel class="CrossV" hittest="false" />
@@ -41,6 +42,58 @@
 				<Button id="Shop6" class="ShopRow Row6"><Label id="ShopL6" class="RowText" hittest="false" text="{s:row}" /></Button>
 				<Label class="ShopHelp" hittest="false" text="W/S select   E buy   F close" />
 			</Panel>
+		</Panel>
+		<Panel id="Sb" class="Sb" hittest="false">
+			<Label class="SbTitle" hittest="false" text="TROUBLE IN TERRORIST TOWN" />
+			<Label id="SbSub" class="SbSub" hittest="false" text="{s:sub}" />
+			<Panel id="SbR0" class="SbRow SbP0" hittest="false"><Label id="SbN0" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK0" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR1" class="SbRow SbP1" hittest="false"><Label id="SbN1" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK1" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR2" class="SbRow SbP2" hittest="false"><Label id="SbN2" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK2" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR3" class="SbRow SbP3" hittest="false"><Label id="SbN3" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK3" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR4" class="SbRow SbP4" hittest="false"><Label id="SbN4" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK4" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR5" class="SbRow SbP5" hittest="false"><Label id="SbN5" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK5" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR6" class="SbRow SbP6" hittest="false"><Label id="SbN6" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK6" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR7" class="SbRow SbP7" hittest="false"><Label id="SbN7" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK7" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR8" class="SbRow SbP8" hittest="false"><Label id="SbN8" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK8" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR9" class="SbRow SbP9" hittest="false"><Label id="SbN9" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK9" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR10" class="SbRow SbP10" hittest="false"><Label id="SbN10" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK10" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR11" class="SbRow SbP11" hittest="false"><Label id="SbN11" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK11" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR12" class="SbRow SbP12" hittest="false"><Label id="SbN12" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK12" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR13" class="SbRow SbP13" hittest="false"><Label id="SbN13" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK13" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR14" class="SbRow SbP14" hittest="false"><Label id="SbN14" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK14" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR15" class="SbRow SbP15" hittest="false"><Label id="SbN15" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK15" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR16" class="SbRow SbP16" hittest="false"><Label id="SbN16" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK16" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR17" class="SbRow SbP17" hittest="false"><Label id="SbN17" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK17" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR18" class="SbRow SbP18" hittest="false"><Label id="SbN18" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK18" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR19" class="SbRow SbP19" hittest="false"><Label id="SbN19" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK19" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR20" class="SbRow SbP20" hittest="false"><Label id="SbN20" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK20" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR21" class="SbRow SbP21" hittest="false"><Label id="SbN21" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK21" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR22" class="SbRow SbP22" hittest="false"><Label id="SbN22" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK22" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR23" class="SbRow SbP23" hittest="false"><Label id="SbN23" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK23" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR24" class="SbRow SbP24" hittest="false"><Label id="SbN24" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK24" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR25" class="SbRow SbP25" hittest="false"><Label id="SbN25" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK25" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR26" class="SbRow SbP26" hittest="false"><Label id="SbN26" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK26" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR27" class="SbRow SbP27" hittest="false"><Label id="SbN27" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK27" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR28" class="SbRow SbP28" hittest="false"><Label id="SbN28" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK28" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR29" class="SbRow SbP29" hittest="false"><Label id="SbN29" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK29" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR30" class="SbRow SbP30" hittest="false"><Label id="SbN30" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK30" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR31" class="SbRow SbP31" hittest="false"><Label id="SbN31" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK31" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR32" class="SbRow SbP32" hittest="false"><Label id="SbN32" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK32" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR33" class="SbRow SbP33" hittest="false"><Label id="SbN33" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK33" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR34" class="SbRow SbP34" hittest="false"><Label id="SbN34" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK34" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR35" class="SbRow SbP35" hittest="false"><Label id="SbN35" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK35" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR36" class="SbRow SbP36" hittest="false"><Label id="SbN36" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK36" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR37" class="SbRow SbP37" hittest="false"><Label id="SbN37" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK37" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR38" class="SbRow SbP38" hittest="false"><Label id="SbN38" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK38" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR39" class="SbRow SbP39" hittest="false"><Label id="SbN39" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK39" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR40" class="SbRow SbP40" hittest="false"><Label id="SbN40" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK40" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR41" class="SbRow SbP41" hittest="false"><Label id="SbN41" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK41" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR42" class="SbRow SbP42" hittest="false"><Label id="SbN42" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK42" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR43" class="SbRow SbP43" hittest="false"><Label id="SbN43" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK43" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR44" class="SbRow SbP44" hittest="false"><Label id="SbN44" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK44" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR45" class="SbRow SbP45" hittest="false"><Label id="SbN45" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK45" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR46" class="SbRow SbP46" hittest="false"><Label id="SbN46" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK46" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
+			<Panel id="SbR47" class="SbRow SbP47" hittest="false"><Label id="SbN47" class="SbName" hittest="false" text="{s:n}" /><Label id="SbK47" class="SbKarma" hittest="false" text="{s:k}" /></Panel>
 		</Panel>
 	</Panel>
 </root>

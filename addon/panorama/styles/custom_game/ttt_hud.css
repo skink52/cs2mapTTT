@@ -1,12 +1,12 @@
 .TttHost { width: 100%; height: 100%; }
 .Ttt { width: 100%; height: 100%; opacity: 0; font-family: Stratum2, "Stratum2 Bold", Arial; }
 .Ttt.stOn { opacity: 1; }
-.HUD_SCOREBOARD_VISIBLE .Ttt, .HUD_ENDOFMATCH_VISIBLE .Ttt { visibility: collapse; }
+.HUD_ENDOFMATCH_VISIBLE .Ttt, .HUD_ENDOFMATCH_VISIBLE .Sb { visibility: collapse; }
 
-.KfBox { width: 480px; height: 236px; horizontal-align: right; margin-top: 64px; background-color: #0c0c0cf2; opacity: 0; }
+.KfBox { width: 480px; height: 300px; horizontal-align: right; margin-top: 64px; background-color: #0c0c0c; opacity: 0; }
 .Ttt.stKF .KfBox { opacity: 1; }
 .Ttt.stKF .RoleBox, .Ttt.stKF .InfoText, .Ttt.stKF .TrackText { opacity: 0; }
-.KfBar { width: 8px; height: 236px; background-color: #505050; }
+.KfBar { width: 8px; height: 300px; background-color: #505050; }
 .Ttt.stInn .KfBar { background-color: #2f9f3f; }
 .Ttt.stTra .KfBar { background-color: #c02020; }
 .Ttt.stDet .KfBar { background-color: #2a5ad0; }
@@ -60,3 +60,71 @@
 .ArText { width: 120px; height: 30px; margin-left: 160px; margin-top: 14px; font-size: 24px; color: #9fc0ff; }
 .AmmoText { width: 300px; height: 48px; horizontal-align: right; margin-right: 24px; margin-top: 1008px; text-align: right; font-size: 36px; font-weight: bold; color: #ffffff; text-shadow: 2px 2px 3px #000000; }
 .ChatText { width: 620px; height: 140px; margin-left: 24px; margin-top: 850px; font-size: 18px; color: #f0f0f0; text-shadow: 1px 1px 2px #000000; }
+
+.TopCover { width: 900px; height: 84px; horizontal-align: center; background-color: #0c0c0c; opacity: 0; }
+.Ttt.stTop .TopCover { opacity: 1; }
+.TopText { width: 900px; height: 60px; margin-top: 12px; text-align: center; font-size: 40px; font-weight: bold; color: #ffffff; }
+
+.Sb { width: 1240px; height: 900px; horizontal-align: center; margin-top: 90px; background-color: #0a0a0a; border: 2px solid #3a3a3a; border-radius: 4px; opacity: 0; }
+.HUD_SCOREBOARD_VISIBLE .Sb.stOn { opacity: 1; }
+.SbTitle { width: 800px; height: 44px; margin-left: 20px; margin-top: 14px; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
+.SbSub { width: 380px; height: 30px; horizontal-align: right; margin-right: 20px; margin-top: 24px; text-align: right; font-size: 20px; color: #c0c0c0; }
+.SbRow { width: 590px; height: 31px; background-color: #ffffff08; }
+.SbRow.stHead { background-color: #ffffff1a; }
+.SbRow.stMe { background-color: #ffffff30; }
+.SbName { width: 470px; height: 28px; margin-left: 10px; margin-top: 2px; font-size: 21px; color: #e8e8e8; }
+.SbKarma { width: 100px; height: 28px; margin-left: 480px; margin-top: 2px; text-align: right; font-size: 21px; color: #c0c0c0; }
+.SbRow.stHead .SbName, .SbRow.stHead .SbKarma { color: #f0c040; font-weight: bold; }
+.SbRow.stDet .SbName { color: #6f9fff; }
+.SbRow.stTra .SbName { color: #ff4a4a; }
+.SbRow.stMia .SbName { color: #e0b050; }
+.SbRow.stDead .SbName, .SbRow.stDead .SbKarma { color: #7a7a7a; }
+.SbRow.stSpec .SbName { color: #a0a0a0; }
+.SbP0 { margin-left: 20px; margin-top: 80px; }
+.SbP1 { margin-left: 20px; margin-top: 113px; }
+.SbP2 { margin-left: 20px; margin-top: 146px; }
+.SbP3 { margin-left: 20px; margin-top: 179px; }
+.SbP4 { margin-left: 20px; margin-top: 212px; }
+.SbP5 { margin-left: 20px; margin-top: 245px; }
+.SbP6 { margin-left: 20px; margin-top: 278px; }
+.SbP7 { margin-left: 20px; margin-top: 311px; }
+.SbP8 { margin-left: 20px; margin-top: 344px; }
+.SbP9 { margin-left: 20px; margin-top: 377px; }
+.SbP10 { margin-left: 20px; margin-top: 410px; }
+.SbP11 { margin-left: 20px; margin-top: 443px; }
+.SbP12 { margin-left: 20px; margin-top: 476px; }
+.SbP13 { margin-left: 20px; margin-top: 509px; }
+.SbP14 { margin-left: 20px; margin-top: 542px; }
+.SbP15 { margin-left: 20px; margin-top: 575px; }
+.SbP16 { margin-left: 20px; margin-top: 608px; }
+.SbP17 { margin-left: 20px; margin-top: 641px; }
+.SbP18 { margin-left: 20px; margin-top: 674px; }
+.SbP19 { margin-left: 20px; margin-top: 707px; }
+.SbP20 { margin-left: 20px; margin-top: 740px; }
+.SbP21 { margin-left: 20px; margin-top: 773px; }
+.SbP22 { margin-left: 20px; margin-top: 806px; }
+.SbP23 { margin-left: 20px; margin-top: 839px; }
+.SbP24 { margin-left: 630px; margin-top: 80px; }
+.SbP25 { margin-left: 630px; margin-top: 113px; }
+.SbP26 { margin-left: 630px; margin-top: 146px; }
+.SbP27 { margin-left: 630px; margin-top: 179px; }
+.SbP28 { margin-left: 630px; margin-top: 212px; }
+.SbP29 { margin-left: 630px; margin-top: 245px; }
+.SbP30 { margin-left: 630px; margin-top: 278px; }
+.SbP31 { margin-left: 630px; margin-top: 311px; }
+.SbP32 { margin-left: 630px; margin-top: 344px; }
+.SbP33 { margin-left: 630px; margin-top: 377px; }
+.SbP34 { margin-left: 630px; margin-top: 410px; }
+.SbP35 { margin-left: 630px; margin-top: 443px; }
+.SbP36 { margin-left: 630px; margin-top: 476px; }
+.SbP37 { margin-left: 630px; margin-top: 509px; }
+.SbP38 { margin-left: 630px; margin-top: 542px; }
+.SbP39 { margin-left: 630px; margin-top: 575px; }
+.SbP40 { margin-left: 630px; margin-top: 608px; }
+.SbP41 { margin-left: 630px; margin-top: 641px; }
+.SbP42 { margin-left: 630px; margin-top: 674px; }
+.SbP43 { margin-left: 630px; margin-top: 707px; }
+.SbP44 { margin-left: 630px; margin-top: 740px; }
+.SbP45 { margin-left: 630px; margin-top: 773px; }
+.SbP46 { margin-left: 630px; margin-top: 806px; }
+.SbP47 { margin-left: 630px; margin-top: 839px; }
