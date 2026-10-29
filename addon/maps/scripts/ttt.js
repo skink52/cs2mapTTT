@@ -16,7 +16,7 @@ const CONFIG = {
     HIDE_KILLER: true,
     TRY_HIDE_KILLFEED: false,
     HUD_IN_KILLFEED: true,
-    HIDE_NATIVE_HUD: true,
+    HIDE_NATIVE_HUD: false,       // SetHUDVisibility also blocks weapon switching (no number keys / wheel), so off
     GIVE_PRIMARY: "auto",
     MAP_WEAPONS_ENOUGH: 10,
     BUTTON_CONE: 0.97,
@@ -37,10 +37,12 @@ const CONFIG = {
     HUD_NAME: "ttt_hud",
     HUD_BUDGET: 600,
     CARRY: true,
-    CARRY_CLASSES: ["prop_physics", "prop_physics_multiplayer", "prop_physics_override", "prop_ragdoll", "func_physbox"],
+    CARRY_CLASSES: ["prop_physics", "prop_physics_multiplayer", "prop_physics_override", "func_physbox"],
     CARRY_RANGE: 110, CARRY_AIM_RADIUS: 28, CARRY_HOLD_TIME: 0.35, CARRY_DIST: 70, CARRY_GAIN: 12, CARRY_MAX_SPEED: 900, CARRY_BREAK_DIST: 200, CARRY_THROW: 550,
     BODY_TEMPLATE: "ttt_body_tpl",
     BODY_MAX: 48,
+    BODY_SET_MODEL: false,        // crash risk, see spawnBody
+    CARRY_BODIES: false,          // carrying a prop_ragdoll Teleports it every tick: off until it's proven safe in game
     HIDE_CLIENT_RAGDOLL: true,
 };
 
@@ -505,14 +507,14 @@ function tryGrab(p, pawn) {
     try { e.SetOwner(pawn); } catch (err) { }
 }
 function carryable(e) {
-    try { return CONFIG.CARRY_CLASSES.includes(e.GetClassName()) || bodies.some(b => b.ent === e); } catch (err) { return false; }
+    try { return CONFIG.CARRY_CLASSES.includes(e.GetClassName()) || (CONFIG.CARRY_BODIES && bodies.some(b => b.ent === e)); } catch (err) { return false; }
 }
 function nearestCarryable(eye, f, reach) {
     // debris objects (the gold block) can be missed by the trace: take the carryable entity closest to the aim line
     let best = null, bestD = CONFIG.CARRY_AIM_RADIUS;
     const list = [];
     for (const cls of CONFIG.CARRY_CLASSES) for (const e of Instance.FindEntitiesByClass(cls)) list.push(e);
-    for (const b of bodies) if (b.ent) list.push(b.ent);
+    if (CONFIG.CARRY_BODIES) for (const b of bodies) if (b.ent) list.push(b.ent);
     for (const e of list) {
         let o;
         try { o = e.GetAbsOrigin(); } catch (err) { continue; }
@@ -577,8 +579,8 @@ function spawnBody(pawn, model) {
         const ents = tpl.ForceSpawn({ x: o.x, y: o.y, z: o.z + 8 }, { pitch: 0, yaw: pawn.GetAbsAngles().yaw, roll: 0 });
         const e = ents && ents[0];
         if (!e) return null;
-        if (model && e instanceof BaseModelEntity) e.SetModel(model);
-        e.Teleport({ velocity: v });
+        // no SetModel / Teleport on a fresh prop_ragdoll: a model swap left its bone list empty and the next Teleport crashed the server
+        if (CONFIG.BODY_SET_MODEL && model && e instanceof BaseModelEntity) e.SetModel(model);
         return e;
     } catch (err) { log("body spawn failed " + err); return null; }
 }

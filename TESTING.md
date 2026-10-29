@@ -31,3 +31,8 @@ Unverified mechanics to watch: velocity on `prop_ragdoll` (moves the whole body?
 19. The io script doesn't shove a block or minecart while someone carries it; walking into one still pushes it.
 20. T2 tunnel shows the crouch prompt; no sandbox-mode error texts at round start.
 21. Both scripts: io script props don't hurt at low speed AND karma / hidden kills still work.
+
+## Results 29 Oct 2026 (skink52)
+
+- FAILED: shooting a player dead during the round crashed the server (prop_ragdoll SetModel + Teleport). Fixed: no model swap or Teleport on bodies, bodies not carryable.
+- FAILED: with HIDE_NATIVE_HUD players couldn't switch away from the pistol. Fixed: HIDE_NATIVE_HUD off by default.
